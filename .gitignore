@@ -1,0 +1,63 @@
+# ---------------------------------------------------------------
+# Unity: pastas geradas automaticamente (NUNCA commitar)
+# O Unity recria tudo isso sozinho ao abrir o projeto.
+# ---------------------------------------------------------------
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+
+# Os .meta dos assets SEMPRE devem ser commitados
+!/[Aa]ssets/**/*.meta
+
+# Plugins de IDE gerados pelo Unity
+/[Aa]ssets/Plugins/Editor/JetBrains*
+
+# Arquivos de projeto gerados para Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+.idea/
+.gradle/
+.consulo/
+ExportedObj/
+*.csproj
+*.unityproj
+*.sln
+*.slnx
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# Relatórios de crash e builds
+sysinfo.txt
+crashlytics-build.properties
+*.apk
+*.aab
+*.app
+*.unitypackage
+
+# Addressables
+/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
+/[Aa]ssets/[Ss]treamingAssets/aa.meta
+/[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+Desktop.ini
