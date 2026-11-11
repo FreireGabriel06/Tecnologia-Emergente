@@ -20,7 +20,12 @@ public class PopupOlharParaJogador : MonoBehaviour
     [Tooltip("Gira só no eixo vertical, assim o popup fica sempre em pé.")]
     [SerializeField] private bool somenteEixoVertical = true;
 
+    [Tooltip("Ao abrir pela primeira vez, o popup deixa de ser filho do livro. Evita que ele fique torto quando o " +
+             "modelo do livro tem escala diferente em cada eixo.")]
+    [SerializeField] private bool soltarDoLivro = true;
+
     private Transform cameraJogador;
+    private bool soltoDoLivro;
 
     private void Awake()
     {
@@ -30,7 +35,27 @@ public class PopupOlharParaJogador : MonoBehaviour
     // Posiciona já no frame em que o popup abre, para ele não aparecer torto por um instante.
     private void OnEnable() => Atualizar();
 
-    private void LateUpdate() => Atualizar();
+    private void LateUpdate()
+    {
+        // Se o livro for destruído, o popup (que não é mais filho dele) vai junto.
+        if (soltoDoLivro && alvo == null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        // Feito aqui e não no Awake: o Unity não deixa trocar o pai de um objeto durante a ativação.
+        if (soltarDoLivro && !soltoDoLivro && seguirAlvo && alvo != null && transform.parent != null)
+        {
+            // Mantém o tamanho no mundo, mas sem herdar rotação e escala do livro.
+            float escalaMundo = transform.lossyScale.x;
+            transform.SetParent(null, true);
+            transform.localScale = Vector3.one * escalaMundo;
+            soltoDoLivro = true;
+        }
+
+        Atualizar();
+    }
 
     private void Atualizar()
     {

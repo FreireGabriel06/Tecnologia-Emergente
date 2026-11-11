@@ -6,11 +6,13 @@ using UnityEngine.UI;
 using UnityEngine.Video;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables; // XRI 3.x. No XRI 2.x quem faz isto compilar é o XRICompatEditor.cs
+using UnityEngine.XR.Interaction.Toolkit.Locomotion.Teleportation; // idem
 using UnityEngine.XR.Interaction.Toolkit.UI;
 
 /// <summary>
 /// Menu "Sebraelab" na barra do Unity, com atalhos para os passos repetitivos do guia:
 ///   Sebraelab > Livros  > Configurar livro selecionado
+///   Sebraelab > Cenário > Colocar modelo do Sebraelab na cena
 ///   Sebraelab > Cenário > Adicionar colliders no cenário selecionado
 ///   Sebraelab > Jogador > Criar jogador de teste (teclado e mouse)
 /// Tudo pode ser desfeito com Ctrl+Z.
@@ -21,6 +23,12 @@ public static class SebraelabMenu
     private const float LarguraPopup = 450f;   // = 45 cm
     private const float Margem = 24f;
     private const int CamadaUI = 5;            // layer "UI" padrão do Unity
+
+    /// <summary>Camada de interação 31: a que o raio de teleporte dos Starter Assets do XRI usa.</summary>
+    internal const int CamadaTeleporte = 31;
+
+    internal const string PastaModelos = "Assets/Models";
+    internal const string NomeChaoTeleporte = "Chao (teleporte)";
 
     private const string SpriteUI = "UI/Skin/UISprite.psd";
 
@@ -48,12 +56,12 @@ public static class SebraelabMenu
     [MenuItem("Sebraelab/Livros/Configurar livro selecionado", true)]
     private static bool ValidarLivrosSelecionados() => Selection.gameObjects.Length > 0;
 
-    private static void ConfigurarLivro(GameObject livro)
+    internal static LivroPopup ConfigurarLivro(GameObject livro)
     {
         if (EditorUtility.IsPersistent(livro))
         {
             Debug.LogWarning($"[Sebraelab] '{livro.name}' está na aba Project. Arraste o livro para a cena e selecione-o na Hierarchy.", livro);
-            return;
+            return null;
         }
 
         // Livros se mexem: não podem ser "Static" (senão ficam parados no lugar ao serem pegos).
@@ -110,6 +118,8 @@ public static class SebraelabMenu
         {
             Debug.Log($"[Sebraelab] Livro '{livro.name}' já tinha popup; só os componentes que faltavam foram adicionados.", livro);
         }
+
+        return livroPopup;
     }
 
     private static void CriarPopup(GameObject livro, LivroPopup livroPopup, SerializedObject popupSerializado)
@@ -235,6 +245,102 @@ public static class SebraelabMenu
     // Cenário
     // =====================================================================
 
+    [MenuItem("Sebraelab/Cenário/Colocar modelo do Sebraelab na cena", false, 19)]
+    private static void ColocarModeloSelecionadoOuDaPasta()
+    {
+        // Usa o modelo selecionado na aba Project; se não tiver, o primeiro da pasta Assets/Models.
+        var modelo = Selection.activeObject as GameObject;
+        if (modelo == null || !EditorUtility.IsPersistent(modelo)) modelo = EncontrarModeloDoCenario();
+
+        if (modelo == null)
+        {
+            EditorUtility.DisplayDialog("Sebraelab",
+                "Nenhum modelo 3D encontrado. Coloque o arquivo do Sebraelab (.fbx, .obj, .glb...) na pasta Assets/Models " +
+                "e tente de novo.", "OK");
+            return;
+        }
+
+        var cenario = ColocarModeloNaCena(modelo);
+        Selection.activeGameObject = cenario;
+        EditorGUIUtility.PingObject(cenario);
+    }
+
+    /// <summary>Primeiro modelo 3D da pasta Assets/Models (ou null).</summary>
+    internal static GameObject EncontrarModeloDoCenario()
+    {
+        if (!AssetDatabase.IsValidFolder(PastaModelos)) return null;
+
+        foreach (var guid in AssetDatabase.FindAssets("t:Model", new[] { PastaModelos }))
+        {
+            var modelo = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
+            if (modelo != null) return modelo;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Coloca o modelo do cenário na cena com colliders em todas as partes e um chão de teleporte invisível
+    /// na altura do ponto mais baixo do modelo. Se a cena já tinha o chão de exemplo, ele vira invisível.
+    /// </summary>
+    internal static GameObject ColocarModeloNaCena(GameObject modelo)
+    {
+        Undo.SetCurrentGroupName("Colocar modelo do Sebraelab");
+        int grupo = Undo.GetCurrentGroup();
+
+        var cenario = (GameObject)PrefabUtility.InstantiatePrefab(modelo);
+        cenario.name = "Cenario Sebraelab";
+        Undo.RegisterCreatedObjectUndo(cenario, "Colocar modelo do Sebraelab");
+
+        AdicionarColliders(cenario, out int adicionados, out _);
+
+        var limites = CalcularLimites(cenario);
+        var chao = GameObject.Find(NomeChaoTeleporte);
+        if (chao == null)
+        {
+            chao = CriarChaoTeleporte(new Vector3(limites.center.x, limites.min.y + 0.01f, limites.center.z),
+                                      new Vector2(limites.size.x, limites.size.z), visivel: false, material: null);
+        }
+        else
+        {
+            Undo.RecordObject(chao.transform, "Ajustar chão de teleporte");
+            chao.transform.position = new Vector3(limites.center.x, limites.min.y + 0.01f, limites.center.z);
+            chao.transform.localScale = new Vector3(Mathf.Max(1f, limites.size.x / 10f), 1f, Mathf.Max(1f, limites.size.z / 10f));
+            var visual = chao.GetComponent<Renderer>();
+            if (visual != null)
+            {
+                Undo.RecordObject(visual, "Esconder chão de exemplo");
+                visual.enabled = false;
+            }
+        }
+
+        Undo.CollapseUndoOperations(grupo);
+        Debug.Log($"[Sebraelab] Modelo '{modelo.name}' colocado na cena com {adicionados} Mesh Collider(s). " +
+                  $"O chão de teleporte foi colocado na altura {limites.min.y + 0.01f:0.00} m; se o teleporte não " +
+                  $"funcionar, ajuste a altura do objeto '{NomeChaoTeleporte}' para ficar no nível do piso.", cenario);
+        return cenario;
+    }
+
+    /// <summary>
+    /// Plano com collider e Teleportation Area (camada de interação 31, a do raio de teleporte dos Starter Assets).
+    /// </summary>
+    internal static GameObject CriarChaoTeleporte(Vector3 centro, Vector2 tamanhoEmMetros, bool visivel, Material material)
+    {
+        var chao = GameObject.CreatePrimitive(PrimitiveType.Plane); // o plano padrão tem 10 x 10 m
+        chao.name = NomeChaoTeleporte;
+        chao.transform.position = centro;
+        chao.transform.localScale = new Vector3(Mathf.Max(1f, tamanhoEmMetros.x / 10f), 1f, Mathf.Max(1f, tamanhoEmMetros.y / 10f));
+
+        var visual = chao.GetComponent<Renderer>();
+        if (material != null) visual.sharedMaterial = material;
+        visual.enabled = visivel;
+
+        var area = chao.AddComponent<TeleportationArea>();
+        area.interactionLayers = 1 << CamadaTeleporte;
+
+        Undo.RegisterCreatedObjectUndo(chao, "Criar chão de teleporte");
+        return chao;
+    }
+
     [MenuItem("Sebraelab/Cenário/Adicionar colliders no cenário selecionado", false, 20)]
     private static void AdicionarCollidersNoCenario()
     {
@@ -246,26 +352,9 @@ public static class SebraelabMenu
         foreach (var raiz in Selection.gameObjects)
         {
             if (EditorUtility.IsPersistent(raiz)) continue;
-
-            // O Mesh Collider precisa ir em cada parte que tem malha (no objeto raiz de um FBX ele não faz nada).
-            foreach (var filtro in raiz.GetComponentsInChildren<MeshFilter>(true))
-            {
-                var parte = filtro.gameObject;
-                if (filtro.sharedMesh == null || parte.GetComponent<Collider>() != null) continue;
-                if (EhObjetoInterativo(parte.transform))
-                {
-                    ignorados++;
-                    continue;
-                }
-
-                var colisor = Undo.AddComponent<MeshCollider>(parte);
-                Undo.RecordObject(colisor, "Configurar Mesh Collider");
-                colisor.sharedMesh = filtro.sharedMesh;
-
-                Undo.RecordObject(parte, "Marcar cenário como Static");
-                parte.isStatic = true;
-                adicionados++;
-            }
+            AdicionarColliders(raiz, out int a, out int i);
+            adicionados += a;
+            ignorados += i;
         }
 
         Undo.CollapseUndoOperations(grupo);
@@ -275,6 +364,35 @@ public static class SebraelabMenu
 
     [MenuItem("Sebraelab/Cenário/Adicionar colliders no cenário selecionado", true)]
     private static bool ValidarCenarioSelecionado() => Selection.gameObjects.Length > 0;
+
+    /// <summary>
+    /// Mesh Collider em cada parte com malha (no objeto raiz de um FBX ele não faria nada) e marca como Static.
+    /// Livros e objetos com física são ignorados.
+    /// </summary>
+    internal static void AdicionarColliders(GameObject raiz, out int adicionados, out int ignorados)
+    {
+        adicionados = 0;
+        ignorados = 0;
+
+        foreach (var filtro in raiz.GetComponentsInChildren<MeshFilter>(true))
+        {
+            var parte = filtro.gameObject;
+            if (filtro.sharedMesh == null || parte.GetComponent<Collider>() != null) continue;
+            if (EhObjetoInterativo(parte.transform))
+            {
+                ignorados++;
+                continue;
+            }
+
+            var colisor = Undo.AddComponent<MeshCollider>(parte);
+            Undo.RecordObject(colisor, "Configurar Mesh Collider");
+            colisor.sharedMesh = filtro.sharedMesh;
+
+            Undo.RecordObject(parte, "Marcar cenário como Static");
+            parte.isStatic = true;
+            adicionados++;
+        }
+    }
 
     private static bool EhObjetoInterativo(Transform parte)
     {
@@ -292,7 +410,16 @@ public static class SebraelabMenu
     // =====================================================================
 
     [MenuItem("Sebraelab/Jogador/Criar jogador de teste (teclado e mouse)", false, 40)]
-    private static void CriarJogadorDesktop()
+    private static void CriarJogadorDesktopMenu()
+    {
+        var jogador = CriarJogadorDesktop();
+        Selection.activeGameObject = jogador;
+
+        Debug.Log("[Sebraelab] Jogador de teste criado. Sem headset ele substitui o XR Origin ao dar Play " +
+                  "(WASD + mouse, Shift corre, E/clique abre o popup do livro, Esc solta o mouse).", jogador);
+    }
+
+    internal static GameObject CriarJogadorDesktop()
     {
         var jogador = new GameObject("Jogador PC (teste sem oculos)");
         var corpo = jogador.AddComponent<CharacterController>();
@@ -317,10 +444,7 @@ public static class SebraelabMenu
         }
 
         Undo.RegisterCreatedObjectUndo(jogador, "Criar jogador de teste");
-        Selection.activeGameObject = jogador;
-
-        Debug.Log("[Sebraelab] Jogador de teste criado. Sem headset ele substitui o XR Origin ao dar Play " +
-                  "(WASD + mouse, Shift corre, E/clique abre o popup do livro, Esc solta o mouse).", jogador);
+        return jogador;
     }
 
     // =====================================================================
@@ -366,6 +490,17 @@ public static class SebraelabMenu
 
     private static void DefinirReferencia(SerializedObject objeto, string nome, Object valor) =>
         PropriedadeObrigatoria(objeto, nome).objectReferenceValue = valor;
+
+    /// <summary>Caixa que envolve todos os Renderers do objeto, no espaço do mundo.</summary>
+    internal static Bounds CalcularLimites(GameObject objeto)
+    {
+        var renderers = objeto.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0) return new Bounds(objeto.transform.position, Vector3.one * 10f);
+
+        var limites = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++) limites.Encapsulate(renderers[i].bounds);
+        return limites;
+    }
 
     /// <summary>Altura do topo do modelo do livro em relação à posição dele, em metros.</summary>
     private static float CalcularTopo(GameObject livro)
