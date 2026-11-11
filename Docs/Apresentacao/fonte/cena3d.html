@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Sebraelab VR - Visualização 3D</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #0a0f1d; font-family: 'Inter', sans-serif; color: #e8eefc; }
+  #palco { position: relative; width: 1920px; height: 1080px; }
+  canvas { position: absolute; inset: 0; }
+  header { position: absolute; top: 44px; left: 96px; right: 96px; display: flex; justify-content: space-between; align-items: center;
+    font-size: 22px; color: #c9d5ee; font-weight: 600; z-index: 5; text-shadow: 0 2px 10px rgba(0,0,0,.6); }
+  header .marca { display: flex; align-items: center; gap: 12px; color: #fff; }
+  header .marca svg { width: 30px; height: 30px; color: #22d3ee; }
+  header .direita { display: flex; gap: 22px; align-items: center; }
+  header .contador { color: #fff; background: rgba(10,15,29,.55); border: 1px solid rgba(255,255,255,.14); padding: 6px 14px; border-radius: 999px; font-size: 20px; }
+  #etiqueta { position: absolute; top: 112px; left: 96px; z-index: 5; display: flex; gap: 14px; align-items: center; }
+  #etiqueta .tag { font-size: 22px; font-weight: 700; padding: 10px 18px; border-radius: 999px; background: rgba(251,191,36,.16); color: #fbbf24; border: 1px solid rgba(251,191,36,.35); }
+  #etiqueta .det { font-size: 22px; color: #c9d5ee; text-shadow: 0 2px 10px rgba(0,0,0,.7); }
+
+  #popup { position: absolute; width: 340px; z-index: 4; transform-origin: 50% 100%; pointer-events: none;
+    background: rgba(18,23,33,.95); border-radius: 18px; padding: 20px 22px; border: 1px solid rgba(255,255,255,.10); box-shadow: 0 24px 60px rgba(0,0,0,.55); }
+  #popup .t { font-size: 25px; font-weight: 800; text-align: center; }
+  #popup .a { font-size: 17px; font-style: italic; color: #bfcbe6; text-align: center; margin-top: 4px; }
+  #popup .linha { display: flex; gap: 14px; margin-top: 14px; align-items: flex-start; }
+  #popup .capa { width: 60px; height: 86px; border-radius: 6px; background: linear-gradient(160deg, #2563eb, #0e7490); flex: none; display: flex; align-items: center; justify-content: center; }
+  #popup .capa svg { width: 36px; height: 36px; color: #fff; }
+  #popup .r { font-size: 16px; line-height: 1.45; color: #e6ebf5; }
+  #popup .video { margin-top: 12px; height: 96px; border-radius: 10px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  #popup .video svg { width: 44px; height: 44px; color: rgba(255,255,255,.9); position: relative; }
+  #popup .video .tag { position: absolute; top: 8px; right: 8px; font-size: 13px; font-weight: 700; padding: 4px 8px; border-radius: 6px; background: rgba(0,0,0,.45); }
+  #popup .seta { position: absolute; left: 50%; bottom: -12px; width: 24px; height: 24px; margin-left: -12px; background: rgba(18,23,33,.95);
+    transform: rotate(45deg); border-right: 1px solid rgba(255,255,255,.10); border-bottom: 1px solid rgba(255,255,255,.10); }
+
+  #legenda { position: absolute; left: 50%; bottom: 48px; transform: translateX(-50%); max-width: 1740px; width: max-content;
+    background: rgba(5,8,18,.78); border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 16px 30px;
+    font-size: 31px; line-height: 1.35; font-weight: 500; text-align: center; color: #fff; z-index: 10; display: none; }
+  #fade { position: absolute; inset: 0; background: #05070d; z-index: 20; opacity: 0; }
+  #topo { position: absolute; left: 0; right: 0; top: 0; height: 230px; z-index: 3; background: linear-gradient(rgba(5,8,18,.82), rgba(5,8,18,0)); }
+</style>
+</head>
+<body>
+<div id="palco">
+  <header>
+    <div class="marca">{{icone:glasses}} Sebraelab VR</div>
+    <div class="direita"><span>Tecnologias Emergentes</span><span class="contador">06 / 13</span></div>
+  </header>
+  <div id="etiqueta"><span class="tag">Visualização ilustrativa</span><span class="det">modelo 3D do Sebraelab + livros de exemplo</span></div>
+  <div id="popup">
+    <div class="t">Livro de exemplo 2</div>
+    <div class="a">Nome do autor</div>
+    <div class="linha"><div class="capa">{{icone:book-open}}</div>
+      <div class="r">Resumo do livro, vindo do asset “Dados do Livro”.</div></div>
+    <div class="video" id="video">{{icone:play}}<span class="tag">MP4 · loop</span></div>
+    <div class="seta"></div>
+  </div>
+  <div id="topo"></div>
+  <div id="legenda"></div>
+  <div id="fade"></div>
+</div>
+
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+
+const L = 1920, A = 1080;
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(L, A); renderer.setPixelRatio(1);
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1;
+document.getElementById('palco').prepend(renderer.domElement);
+
+const cena = new THREE.Scene();
+cena.background = new THREE.Color(0x0b1222);
+const camera = new THREE.PerspectiveCamera(55, L / A, 0.05, 200);
+
+cena.add(new THREE.HemisphereLight(0xf2f5ff, 0x5a5650, 1.9));
+const sol = new THREE.DirectionalLight(0xffffff, 1.0); sol.position.set(4, 10, 6); cena.add(sol);
+
+// ---------- modelo 3D do Sebraelab (da equipe) ----------
+let mesa = null, livroAlvo = null, livros = [], centroMesa = null, dirJogador = null, topoMesa = 0.55;
+const spot = new THREE.SpotLight(0xfff1d6, 0, 5, THREE.MathUtils.degToRad(30), 0.45, 1.6);
+spot.castShadow = true; spot.shadow.mapSize.set(1024, 1024); spot.shadow.bias = -0.0005;
+const cone = new THREE.Mesh(new THREE.ConeGeometry(0.75, 1.85, 48, 1, true),
+  new THREE.MeshBasicMaterial({ color: 0xfff1d6, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }));
+const luminaria = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 0.1, 32), new THREE.MeshStandardMaterial({ color: 0x222831, emissive: 0x000000 }));
+const contorno = new THREE.Mesh(new THREE.BoxGeometry(0.175, 0.045, 0.245),
+  new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0, side: THREE.BackSide }));
+const mao = new THREE.Group();
+{
+  const cabo = new THREE.Mesh(new THREE.CapsuleGeometry(0.022, 0.09, 8, 16), new THREE.MeshStandardMaterial({ color: 0xf2f5fa, roughness: 0.35 }));
+  cabo.rotation.x = 0.9;
+  const ponta = new THREE.Mesh(new THREE.SphereGeometry(0.03, 24, 12), new THREE.MeshStandardMaterial({ color: 0x22d3ee, emissive: 0x22d3ee, emissiveIntensity: 1.2 }));
+  ponta.position.set(0, 0.035, -0.04); mao.add(cabo, ponta);
+}
+
+let posLivro0, rotLivro0;
+new FBXLoader().load('./sebraelab3d/Sebrae Lab.fbx', modelo => {
+  // esconde o que não é da sala, como o configurador faz na Unity
+  modelo.children.forEach(f => { if (f.name.startsWith('SM_') || f.name.startsWith('chrome')) f.visible = false; });
+  modelo.traverse(o => {
+    if (o.isCamera || o.isLight) o.visible = false;
+    if (o.isMesh) { o.receiveShadow = true; [].concat(o.material).forEach(m => { m.side = THREE.DoubleSide; }); }
+  });
+  modelo.scale.setScalar(0.01);
+  cena.add(modelo); modelo.updateMatrixWorld(true);
+
+  const sala = new THREE.Box3();
+  modelo.children.forEach(f => { if (f.visible) sala.expandByObject(f); });
+  mesa = modelo.getObjectByName('Mesa_Grande');
+  const bm = new THREE.Box3().setFromObject(mesa);
+  topoMesa = bm.max.y;
+  centroMesa = bm.getCenter(new THREE.Vector3()); centroMesa.y = 0;
+  const centroSala = sala.getCenter(new THREE.Vector3());
+  dirJogador = new THREE.Vector3(centroSala.x - centroMesa.x, 0, centroSala.z - centroMesa.z).normalize();
+  const lateral = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), dirJogador).normalize();
+  const yaw = Math.atan2(dirJogador.x, dirJogador.z);
+
+  // 3 livros de exemplo em cima da mesa
+  const cores = [0xc0392b, 0x2563eb, 0x16a34a];
+  for (let i = 0; i < 3; i++) {
+    const livro = new THREE.Group();
+    livro.position.copy(centroMesa).addScaledVector(lateral, (i - 1) * 0.22); livro.position.y = topoMesa + 0.015;
+    livro.rotation.y = yaw + THREE.MathUtils.degToRad((i - 1) * -12);
+    const corpo = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.03, 0.23), new THREE.MeshStandardMaterial({ color: cores[i], roughness: 0.55 }));
+    corpo.castShadow = true; livro.add(corpo);
+    const paginas = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.024, 0.222), new THREE.MeshStandardMaterial({ color: 0xf1ead8, roughness: 0.9 }));
+    paginas.position.x = 0.006; livro.add(paginas);
+    cena.add(livro); livros.push(livro);
+  }
+  livroAlvo = livros[1]; livroAlvo.add(contorno);
+  posLivro0 = livroAlvo.position.clone(); rotLivro0 = livroAlvo.rotation.clone();
+
+  // luz de destaque acima da mesa
+  spot.position.set(centroMesa.x, 2.5, centroMesa.z).addScaledVector(dirJogador, 0.25);
+  spot.target.position.set(centroMesa.x, topoMesa, centroMesa.z);
+  cena.add(spot, spot.target);
+  cone.position.copy(spot.position).add(new THREE.Vector3(0, -0.92, 0)); cena.add(cone);
+  luminaria.position.copy(spot.position); cena.add(luminaria);
+  cena.add(mao);
+
+  THREE.DefaultLoadingManager.onLoad = () => setTimeout(() => { window.pronto3D = true; }, 300);
+  setTimeout(() => { window.pronto3D = true; }, 15000);
+});
+
+// ---------------- animação ----------------
+const lerp = THREE.MathUtils.lerp, clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const suave = p => p * p * (3 - 2 * p);
+const prog = (t, a, b) => suave(clamp((t - a) / (b - a), 0, 1));
+const FADE = 0.35;
+const popup = document.getElementById('popup'), legenda = document.getElementById('legenda'), fade = document.getElementById('fade');
+const ponto = (dist, lado, y) => new THREE.Vector3().copy(centroMesa).addScaledVector(dirJogador, dist)
+  .addScaledVector(new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), dirJogador).normalize(), lado).setY(y);
+
+window.desenhar = function (dados, t) {
+  const s = dados.segmentos, D = dados.duracao;
+  const s2 = s[1].inicio, s3 = s[2].inicio;
+  const tLuz = s[0].inicio + (s[0].fim - s[0].inicio) * 0.7;
+
+  // câmera: visão geral da sala -> aproxima da mesa -> órbita lenta
+  const pa = prog(t, 0, s2 - 0.2), pb = prog(t, s2 - 0.2, D);
+  const inicio = ponto(5.2, -2.25, 1.75), perto = ponto(1.8, 0.15, 1.5), fim = ponto(1.7, -0.5, 1.48);
+  const cam = inicio.clone().lerp(perto, pa).lerp(fim, pb);
+  camera.position.copy(cam);
+  const alvo = ponto(0, 0, topoMesa + 0.1 + 0.12 * pb).lerp(ponto(-1.5, 0, 1.2), 1 - pa);
+  camera.lookAt(alvo);
+
+  // luz de destaque
+  const luz = prog(t, tLuz, tLuz + 0.6);
+  spot.intensity = 8 * luz; cone.material.opacity = 0.05 * luz;
+  luminaria.material.emissive.setRGB(luz, luz * 0.92, luz * 0.75);
+
+  // mão se aproxima do livro do meio e depois o levanta
+  const pm = prog(t, s2 - 1.3, s2 - 0.1);
+  const maoInicio = ponto(0.75, 0.35, 0.95), maoPerto = posLivro0.clone().addScaledVector(dirJogador, 0.07).setY(topoMesa + 0.07);
+  const maoPos = maoInicio.clone().lerp(maoPerto, pm);
+  const pg = prog(t, s3, s3 + 1.6), giro = Math.max(0, t - (s3 + 1.6));
+  const livroPos = posLivro0.clone().lerp(ponto(0.45, 0.05, 0.86), pg);
+  livroAlvo.position.copy(livroPos);
+  livroAlvo.rotation.set(rotLivro0.x + (0.75 + 0.15 * Math.sin(giro * 1.3)) * pg,
+                         rotLivro0.y + (0.9 + 0.45 * Math.sin(giro * 0.9)) * pg,
+                         rotLivro0.z + 0.35 * pg);
+  if (pg > 0) maoPos.lerp(livroPos.clone().addScaledVector(dirJogador, 0.1).setY(livroPos.y + 0.02), pg);
+  mao.position.copy(maoPos);
+  mao.visible = t > s2 - 1.4;
+  contorno.material.opacity = 0.85 * prog(t, s2 - 0.3, s2);
+
+  renderer.render(cena, camera);
+
+  // painel: sempre em pé, segue o livro
+  const ancora = livroPos.clone().add(new THREE.Vector3(0, 0.14, 0)).project(camera);
+  const x = (ancora.x * 0.5 + 0.5) * L, y = (-ancora.y * 0.5 + 0.5) * A;
+  const pp = prog(t, s2 - 0.05, s2 + 0.4);
+  popup.style.left = (x - 170) + 'px'; popup.style.top = (y - popup.offsetHeight - 14) + 'px';
+  popup.style.opacity = pp; popup.style.transform = `scale(${0.85 + 0.15 * pp})`;
+  document.getElementById('video').style.background = `linear-gradient(${(t * 40) % 360}deg, #1e293b, #0f766e 55%, #1d4ed8)`;
+
+  let atual = null; s.forEach(seg => { if (t >= seg.inicio) atual = seg; });
+  if (atual && t < D - FADE) { legenda.textContent = atual.legenda; legenda.style.display = 'block'; } else legenda.style.display = 'none';
+  let f = 0; if (t < FADE) f = 1 - t / FADE; else if (t > D - FADE) f = (t - (D - FADE)) / FADE;
+  fade.style.opacity = clamp(f, 0, 1);
+};
+</script>
+</body>
+</html>

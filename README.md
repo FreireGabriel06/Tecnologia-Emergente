@@ -7,6 +7,7 @@ com a mão e vê um popup com título, autor, resumo, capa e uma animação (GIF
 | Documento | Para que serve |
 | --- | --- |
 | [`Docs/CONFIGURACAO_UNITY.md`](Docs/CONFIGURACAO_UNITY.md) | Passo a passo no Unity: abrir e configurar o projeto, cenário, livros, vídeos, build para o Quest |
+| [`Docs/Apresentacao/`](Docs/Apresentacao/) | Vídeo de apresentação do projeto (narrado, ~4 min) e o roteiro de cada cena |
 | [`Docs/GDD_Sebraelab_VR.docx`](Docs/GDD_Sebraelab_VR.docx) | Game Design Document |
 | [`Docs/GUIDE_JOGO_SEBRAELAB.txt`](Docs/GUIDE_JOGO_SEBRAELAB.txt) | Guia original de implementação manual |
 
@@ -14,8 +15,9 @@ com a mão e vê um popup com título, autor, resumo, capa e uma animação (GIF
 
 - [x] Repositório é um projeto Unity 6 com XR Interaction Toolkit, OpenXR e Input System (`Packages/manifest.json`)
 - [x] Scripts: popup dos livros, dados dos livros, destaque dos estandes, jogador de teste no PC e menu de automação no editor
-- [x] Configurador automático: URP, OpenXR/Quest, XR Origin e a cena `Sebraelab.unity` com um estande de exemplo
-- [ ] **Fase 1**: abrir o projeto e rodar o configurador (uma pessoa) e colocar o modelo do Sebraelab em `Assets/Models`
+- [x] Configurador automático: URP, OpenXR/Quest, XR Origin e a cena `Sebraelab.unity` com livros de exemplo
+- [x] Modelo 3D do Sebraelab no projeto (`Assets/Sebraelab3D`): o configurador monta a cena dentro dele
+- [ ] **Fase 1**: abrir o projeto no Unity 6 e rodar o configurador (uma pessoa só) e conferir o cenário
 - [ ] **Fase 2**: posicionar e configurar os livros de verdade
 - [ ] **Fase 3**: textos, capas e vídeos de cada livro
 - [ ] **Fase 4**: polimento, iluminação e performance no Quest
@@ -32,7 +34,8 @@ Assets/
     Player/      DesktopPlayerController.cs, DesktopInteracao.cs, EntradaDesktop.cs
     Editor/      SebraelabMenu.cs, SebraelabConfigurador.cs  (menu "Sebraelab" no Unity)
     Compat/      XRICompat.cs      (deixa os scripts compatíveis com XRI 2.x e 3.x)
-  Models/        modelo 3D do Sebraelab (.fbx / .obj / .glb)
+  Sebraelab3D/   modelo 3D do Sebraelab ("Sebrae Lab.fbx"), móveis separados e texturas
+  Models/        outros modelos 3D (.fbx / .obj / .glb)
   Materials/     materiais
   Videos/        GIFs convertidos para .mp4
   Livros/        assets "Dados do Livro" e imagens das capas

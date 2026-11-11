@@ -1,3 +1,4 @@
+using System.IO;
 using TMPro;
 using UnityEditor;
 using UnityEditor.Events;
@@ -28,6 +29,8 @@ public static class SebraelabMenu
     internal const int CamadaTeleporte = 31;
 
     internal const string PastaModelos = "Assets/Models";
+    internal const string PastaCenario = "Assets/Sebraelab3D";
+    internal const string NomeModeloPrincipal = "Sebrae Lab";
     internal const string NomeChaoTeleporte = "Chao (teleporte)";
 
     private const string SpriteUI = "UI/Skin/UISprite.psd";
@@ -255,7 +258,7 @@ public static class SebraelabMenu
         if (modelo == null)
         {
             EditorUtility.DisplayDialog("Sebraelab",
-                "Nenhum modelo 3D encontrado. Coloque o arquivo do Sebraelab (.fbx, .obj, .glb...) na pasta Assets/Models " +
+                "Nenhum modelo 3D encontrado. Coloque o arquivo do cenário (.fbx, .obj, .glb...) na pasta Assets/Models " +
                 "e tente de novo.", "OK");
             return;
         }
@@ -265,22 +268,31 @@ public static class SebraelabMenu
         EditorGUIUtility.PingObject(cenario);
     }
 
-    /// <summary>Primeiro modelo 3D da pasta Assets/Models (ou null).</summary>
+    /// <summary>
+    /// O modelo do Sebraelab ("Sebrae Lab" em Assets/Sebraelab3D) ou, se não existir, o primeiro modelo de Assets/Models.
+    /// </summary>
     internal static GameObject EncontrarModeloDoCenario()
     {
-        if (!AssetDatabase.IsValidFolder(PastaModelos)) return null;
-
-        foreach (var guid in AssetDatabase.FindAssets("t:Model", new[] { PastaModelos }))
+        GameObject alternativo = null;
+        foreach (var pasta in new[] { PastaCenario, PastaModelos })
         {
-            var modelo = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
-            if (modelo != null) return modelo;
+            if (!AssetDatabase.IsValidFolder(pasta)) continue;
+            foreach (var guid in AssetDatabase.FindAssets("t:Model", new[] { pasta }))
+            {
+                var caminho = AssetDatabase.GUIDToAssetPath(guid);
+                var modelo = AssetDatabase.LoadAssetAtPath<GameObject>(caminho);
+                if (modelo == null) continue;
+                if (Path.GetFileNameWithoutExtension(caminho) == NomeModeloPrincipal) return modelo;
+                if (alternativo == null && pasta == PastaModelos) alternativo = modelo;
+            }
         }
-        return null;
+        return alternativo;
     }
 
     /// <summary>
-    /// Coloca o modelo do cenário na cena com colliders em todas as partes e um chão de teleporte invisível
-    /// na altura do ponto mais baixo do modelo. Se a cena já tinha o chão de exemplo, ele vira invisível.
+    /// Coloca o modelo do cenário na cena: esconde o que não faz parte da sala (peças soltas "SM_", câmeras, luzes e
+    /// planos de referência gigantes), põe colliders em todas as partes e um chão de teleporte invisível no nível do piso.
+    /// Se a cena já tinha o chão de exemplo, ele é reaproveitado e fica invisível.
     /// </summary>
     internal static GameObject ColocarModeloNaCena(GameObject modelo)
     {
@@ -291,20 +303,21 @@ public static class SebraelabMenu
         cenario.name = "Cenario Sebraelab";
         Undo.RegisterCreatedObjectUndo(cenario, "Colocar modelo do Sebraelab");
 
+        int escondidos = LimparModelo(cenario);
         AdicionarColliders(cenario, out int adicionados, out _);
 
-        var limites = CalcularLimites(cenario);
+        var piso = LimitesDoPiso(cenario);
+        var centroChao = new Vector3(piso.center.x, piso.max.y + 0.01f, piso.center.z);
         var chao = GameObject.Find(NomeChaoTeleporte);
         if (chao == null)
         {
-            chao = CriarChaoTeleporte(new Vector3(limites.center.x, limites.min.y + 0.01f, limites.center.z),
-                                      new Vector2(limites.size.x, limites.size.z), visivel: false, material: null);
+            chao = CriarChaoTeleporte(centroChao, new Vector2(piso.size.x, piso.size.z), visivel: false, material: null);
         }
         else
         {
             Undo.RecordObject(chao.transform, "Ajustar chão de teleporte");
-            chao.transform.position = new Vector3(limites.center.x, limites.min.y + 0.01f, limites.center.z);
-            chao.transform.localScale = new Vector3(Mathf.Max(1f, limites.size.x / 10f), 1f, Mathf.Max(1f, limites.size.z / 10f));
+            chao.transform.position = centroChao;
+            chao.transform.localScale = new Vector3(Mathf.Max(1f, piso.size.x / 10f), 1f, Mathf.Max(1f, piso.size.z / 10f));
             var visual = chao.GetComponent<Renderer>();
             if (visual != null)
             {
@@ -314,10 +327,107 @@ public static class SebraelabMenu
         }
 
         Undo.CollapseUndoOperations(grupo);
-        Debug.Log($"[Sebraelab] Modelo '{modelo.name}' colocado na cena com {adicionados} Mesh Collider(s). " +
-                  $"O chão de teleporte foi colocado na altura {limites.min.y + 0.01f:0.00} m; se o teleporte não " +
-                  $"funcionar, ajuste a altura do objeto '{NomeChaoTeleporte}' para ficar no nível do piso.", cenario);
+        Debug.Log($"[Sebraelab] Modelo '{modelo.name}' colocado na cena com {adicionados} Mesh Collider(s)" +
+                  (escondidos > 0 ? $" ({escondidos} objeto(s) fora da sala escondidos)" : "") +
+                  $". Chão de teleporte na altura {centroChao.y:0.00} m; se o teleporte não funcionar, ajuste a altura do " +
+                  $"objeto '{NomeChaoTeleporte}' para ficar no nível do piso.", cenario);
         return cenario;
+    }
+
+    /// <summary>
+    /// Esconde (desativa) o que veio no arquivo do modelo mas não faz parte da sala. Devolve quantos objetos escondeu.
+    /// </summary>
+    internal static int LimparModelo(GameObject cenario)
+    {
+        int escondidos = 0;
+        void Esconder(GameObject objeto)
+        {
+            if (!objeto.activeSelf || objeto == cenario) return;
+            Undo.RecordObject(objeto, "Esconder objeto fora da sala");
+            objeto.SetActive(false);
+            escondidos++;
+        }
+
+        // Peças soltas da biblioteca de móveis ("SM_..."), quando o arquivo também tem a sala montada.
+        var filhos = new System.Collections.Generic.List<Transform>();
+        foreach (Transform filho in cenario.transform) filhos.Add(filho);
+        bool temSalaMontada = filhos.Exists(f => !f.name.StartsWith("SM_"));
+        if (temSalaMontada)
+            foreach (var filho in filhos)
+                if (filho.name.StartsWith("SM_")) Esconder(filho.gameObject);
+
+        // Câmeras e luzes que vieram do programa de modelagem.
+        foreach (var camera in cenario.GetComponentsInChildren<Camera>(true)) Esconder(camera.gameObject);
+        foreach (var luz in cenario.GetComponentsInChildren<Light>(true)) Esconder(luz.gameObject);
+
+        // Planos de referência enormes (ex.: imagem da planta usada na modelagem).
+        if (TentarLimitesDoPiso(cenario, out var piso))
+        {
+            foreach (var renderer in cenario.GetComponentsInChildren<Renderer>())
+            {
+                var b = renderer.bounds;
+                if (b.size.x > piso.size.x * 2.5f || b.size.z > piso.size.z * 2.5f) Esconder(renderer.gameObject);
+            }
+        }
+
+        return escondidos;
+    }
+
+    private static readonly string[] PalavrasPiso = { "chao", "chão", "piso", "floor", "ground" };
+
+    /// <summary>Limites do piso (partes com material de chão); se não achar, os limites do modelo inteiro.</summary>
+    internal static Bounds LimitesDoPiso(GameObject cenario)
+    {
+        if (TentarLimitesDoPiso(cenario, out var piso)) return piso;
+        var tudo = CalcularLimites(cenario);
+        return new Bounds(new Vector3(tudo.center.x, tudo.min.y, tudo.center.z), new Vector3(tudo.size.x, 0f, tudo.size.z));
+    }
+
+    /// <summary>Junta as partes (submeshes) cujo material tem nome de chão: "Chao", "Piso", "Floor"...</summary>
+    internal static bool TentarLimitesDoPiso(GameObject cenario, out Bounds limites)
+    {
+        limites = new Bounds();
+        bool encontrou = false;
+
+        foreach (var renderer in cenario.GetComponentsInChildren<MeshRenderer>())
+        {
+            var filtro = renderer.GetComponent<MeshFilter>();
+            var malha = filtro != null ? filtro.sharedMesh : null;
+            if (malha == null) continue;
+
+            var materiais = renderer.sharedMaterials;
+            for (int i = 0; i < materiais.Length && i < malha.subMeshCount; i++)
+            {
+                if (materiais[i] == null) continue;
+                var nome = materiais[i].name.ToLowerInvariant();
+                if (!System.Array.Exists(PalavrasPiso, palavra => nome.Contains(palavra))) continue;
+
+                var b = malha.GetSubMesh(i).bounds;
+                for (int c = 0; c < 8; c++)
+                {
+                    var canto = renderer.transform.TransformPoint(new Vector3((c & 1) == 0 ? b.min.x : b.max.x,
+                                                                              (c & 2) == 0 ? b.min.y : b.max.y,
+                                                                              (c & 4) == 0 ? b.min.z : b.max.z));
+                    if (encontrou) limites.Encapsulate(canto);
+                    else { limites = new Bounds(canto, Vector3.zero); encontrou = true; }
+                }
+            }
+        }
+        return encontrou;
+    }
+
+    /// <summary>Uma mesa do cenário para os livros de exemplo (prefere a "Mesa Grande").</summary>
+    internal static Renderer EncontrarMesa(GameObject cenario)
+    {
+        Renderer escolhida = null;
+        foreach (var renderer in cenario.GetComponentsInChildren<Renderer>())
+        {
+            var nome = renderer.gameObject.name.ToLowerInvariant();
+            if (!nome.Contains("mesa")) continue;
+            if (nome.Contains("grande")) return renderer;
+            if (escolhida == null) escolhida = renderer;
+        }
+        return escolhida;
     }
 
     /// <summary>
@@ -377,7 +487,7 @@ public static class SebraelabMenu
         foreach (var filtro in raiz.GetComponentsInChildren<MeshFilter>(true))
         {
             var parte = filtro.gameObject;
-            if (filtro.sharedMesh == null || parte.GetComponent<Collider>() != null) continue;
+            if (filtro.sharedMesh == null || !parte.activeInHierarchy || parte.GetComponent<Collider>() != null) continue;
             if (EhObjetoInterativo(parte.transform))
             {
                 ignorados++;

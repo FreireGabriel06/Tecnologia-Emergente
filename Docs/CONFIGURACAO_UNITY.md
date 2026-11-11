@@ -29,9 +29,9 @@ cenário, dos livros e do jogador de teste. Tudo o que os menus fazem na cena po
    - importa o **TMP Essential Resources** do TextMeshPro;
    - ativa o **OpenXR** para PC e Android, com os controles do Quest e o *Meta Quest Support*;
    - deixa o build do Quest pronto (IL2CPP, ARM64, Vulkan, ASTC, Linear);
-   - cria a cena **`Assets/Scenes/Sebraelab.unity`** com: XR Origin, EventSystem de VR, jogador de teste do PC,
-     chão de teleporte, o modelo do Sebraelab (se já estiver em `Assets/Models`) e um **estande de exemplo com 3 livros**
-     (popup, vídeo e luz de destaque já ligados).
+   - cria a cena **`Assets/Scenes/Sebraelab.unity`** **dentro do modelo do Sebraelab** (`Assets/Sebraelab3D/Sebrae Lab.fbx`),
+     com XR Origin, EventSystem de VR, jogador de teste do PC, chão de teleporte no piso e **3 livros de exemplo em cima
+     da "Mesa Grande"** (popup, vídeo e luz de destaque já ligados). O jogador começa de frente para essa mesa.
 5. No fim aparece **Pronto!**. Dê **Play** para testar: sem óculos, use WASD + mouse e aperte **E** num livro.
 6. Faça o commit de tudo (inclusive `Packages/`, `ProjectSettings/` e as pastas novas em `Assets/`) e o push.
    Os outros só precisam dar `git pull` e abrir o projeto. Para eles o configurador não pergunta nada, porque a cena já existe.
@@ -44,18 +44,22 @@ cenário, dos livros e do jogador de teste. Tudo o que os menus fazem na cena po
 
 ## 2. Cenário do Sebraelab
 
-1. Arraste o arquivo do modelo (`.fbx`, `.obj`, `.glb`...) para a pasta **`Assets/Models`**.
-2. Abra a cena `Assets/Scenes/Sebraelab.unity` e use **Sebraelab > Cenário > Colocar modelo do Sebraelab na cena**. Isso:
-   - coloca o modelo na cena;
+O modelo da equipe já está no projeto, em **`Assets/Sebraelab3D`**: `Sebrae Lab.fbx` é a sala montada, os arquivos
+`SM_*.fbx` são os móveis separados, e há também as texturas de piso, parede e madeira. O configurador já coloca a sala na
+cena. Se precisar colocar de novo (ou usar outro modelo), use **Sebraelab > Cenário > Colocar modelo do Sebraelab na cena**. Isso:
+   - coloca o modelo na cena e esconde o que não faz parte da sala: as cópias soltas dos móveis (`SM_...`), a câmera e
+     o plano gigante com a imagem de referência que vieram do Blender;
    - adiciona **Mesh Collider** em cada parte e marca tudo como *Static*, para ninguém atravessar parede ou chão;
-   - deixa o **chão de teleporte** invisível, na altura do ponto mais baixo do modelo.
+   - coloca um **chão de teleporte** invisível no nível do piso (as partes com material "Chao ...").
+
+Para outro modelo, coloque o arquivo em **`Assets/Models`** antes de usar o menu.
 3. Confira a **escala**: em VR, 1 unidade = 1 metro, e uma porta tem uns 2,1 m de altura. Se estiver errado, mude o
    **Scale Factor** na aba **Model** do Inspector do arquivo e clique em **Apply**.
 4. **Materiais:** se o modelo veio sem cor, na aba **Materials** do Inspector do arquivo use **Extract Materials...**
    para `Assets/Materials`. Se ficarem rosa: **Window > Rendering > Render Pipeline Converter > Material Upgrade**.
-5. Mova o **XR Origin** (e o *Jogador PC*) para a entrada do Sebraelab. É ali que o jogador começa.
+5. O jogador começa de frente para a "Mesa Grande". Para começar na entrada, mova o **XR Origin** (e o *Jogador PC*).
 6. Se o teleporte não funcionar no piso, ajuste a altura do objeto **`Chao (teleporte)`** para ficar no nível do piso.
-7. Mova o **Estande 1 (exemplo)** para uma mesa do Sebraelab, ou apague-o depois de configurar os livros de verdade.
+7. Os **Livros de exemplo** podem ser movidos para outras mesas ou apagados depois de configurar os livros de verdade.
 
 ## 3. Livros
 

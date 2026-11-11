@@ -66,3 +66,10 @@ LightingData.asset binary
 # Documentos binários
 *.docx binary
 *.pdf  binary
+
+# O cenário do Sebraelab é pequeno (~11 MB) e fica no Git normal, sem LFS:
+# assim funciona mesmo para quem ainda não instalou o Git LFS.
+Assets/Sebraelab3D/** -filter -diff -merge -text
+
+# O vídeo de apresentação (~16 MB) também fica no Git normal.
+Docs/Apresentacao/*.mp4 -filter -diff -merge -text
