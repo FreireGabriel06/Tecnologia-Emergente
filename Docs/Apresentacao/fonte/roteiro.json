@@ -1,0 +1,302 @@
+{
+  "voz": "pf_dora",
+  "velocidade": 1.0,
+  "cenas": [
+    {
+      "id": "abertura",
+      "segmentos": [
+        {
+          "passo": 1,
+          "fala": "Olá! Este é o Sebraê Lab vê érre: uma exposição interativa de livros em realidade virtual.",
+          "legenda": "Olá! Este é o Sebraelab VR: uma exposição interativa de livros em realidade virtual."
+        },
+        {
+          "passo": 2,
+          "fala": "O projeto foi desenvolvido para a disciplina de Tecnologias Emergentes.",
+          "legenda": "O projeto foi desenvolvido para a disciplina de Tecnologias Emergentes."
+        }
+      ]
+    },
+    {
+      "id": "ideia",
+      "segmentos": [
+        {
+          "passo": 1,
+          "fala": "A ideia é recriar o Sebraê Lab em três dimensões e transformá-lo numa feira de livros virtual.",
+          "legenda": "A ideia é recriar o Sebraelab em 3D e transformá-lo numa feira de livros virtual."
+        },
+        {
+          "passo": 2,
+          "fala": "O visitante coloca os óculos, anda livremente pelo espaço e pega os livros com as próprias mãos.",
+          "legenda": "O visitante coloca os óculos, anda livremente pelo espaço e pega os livros com as próprias mãos."
+        },
+        {
+          "passo": 3,
+          "fala": "Na hora, ele vê um resumo, a capa e uma animação sobre cada obra.",
+          "legenda": "Na hora, ele vê um resumo, a capa e uma animação sobre cada obra."
+        }
+      ]
+    },
+    {
+      "id": "pilares",
+      "segmentos": [
+        {
+          "passo": 0,
+          "fala": "O projeto segue quatro pilares, definidos no nosso documento de design.",
+          "legenda": "O projeto segue quatro pilares, definidos no nosso documento de design (GDD)."
+        },
+        {
+          "passo": 1,
+          "fala": "Fidelidade do cenário, para o visitante se sentir dentro do Sebraê Lab.",
+          "legenda": "Fidelidade do cenário, para o visitante se sentir dentro do Sebraelab."
+        },
+        {
+          "passo": 2,
+          "fala": "Interatividade natural: pegar e girar os livros como no mundo real.",
+          "legenda": "Interatividade natural: pegar e girar os livros como no mundo real."
+        },
+        {
+          "passo": 3,
+          "fala": "Multimídia dinâmica, com textos e animações.",
+          "legenda": "Multimídia dinâmica, com textos e animações."
+        },
+        {
+          "passo": 4,
+          "fala": "E uma arquitetura modular, pronta para receber minijogos em cada livro.",
+          "legenda": "E uma arquitetura modular, pronta para receber minijogos em cada livro."
+        }
+      ]
+    },
+    {
+      "id": "tecnologias",
+      "segmentos": [
+        {
+          "passo": 1,
+          "fala": "Usamos a Yúniti seis, com o pacote de renderização universal, otimizado para óculos autônomos.",
+          "legenda": "Usamos a Unity 6, com o Universal Render Pipeline (URP), otimizado para óculos autônomos."
+        },
+        {
+          "passo": 2,
+          "fala": "A interação em realidade virtual vem do kit de interação ékis érre da Yúniti,",
+          "legenda": "A interação em realidade virtual vem do XR Interaction Toolkit da Unity,"
+        },
+        {
+          "passo": 3,
+          "fala": "e o Ôpen ékis érre conecta o projeto ao Méta Kuést e a outros óculos.",
+          "legenda": "e o OpenXR conecta o projeto ao Meta Quest e a outros óculos."
+        },
+        {
+          "passo": 4,
+          "fala": "A lógica foi programada em cê chárp, e todo o código fica versionado no Guít Rãb.",
+          "legenda": "A lógica foi programada em C#, e todo o código fica versionado no GitHub."
+        }
+      ]
+    },
+    {
+      "id": "experiencia",
+      "segmentos": [
+        {
+          "passo": 0,
+          "fala": "Veja como funciona a experiência.",
+          "legenda": "Veja como funciona a experiência."
+        },
+        {
+          "passo": 1,
+          "fala": "O visitante começa na entrada do Sebraê Lab.",
+          "legenda": "O visitante começa na entrada do Sebraelab."
+        },
+        {
+          "passo": 2,
+          "fala": "Com o analógico do controle, ele anda ou se teletransporta pelo espaço.",
+          "legenda": "Com o analógico do controle, ele anda ou se teletransporta pelo espaço."
+        },
+        {
+          "passo": 3,
+          "fala": "Ao chegar perto de um estande, uma luz de destaque se acende.",
+          "legenda": "Ao chegar perto de um estande, uma luz de destaque se acende."
+        },
+        {
+          "passo": 4,
+          "fala": "Quando ele aproxima a mão de um livro, aparece um painel flutuante com as informações.",
+          "legenda": "Quando ele aproxima a mão de um livro, aparece um painel flutuante com as informações."
+        },
+        {
+          "passo": 5,
+          "fala": "Ao pegar o livro, o painel continua aberto até ele soltar.",
+          "legenda": "Ao pegar o livro, o painel continua aberto até ele soltar."
+        }
+      ]
+    },
+    {
+      "id": "visualizacao",
+      "tresD": true,
+      "segmentos": [
+        {
+          "passo": 1,
+          "fala": "Esta é uma visualização ilustrativa do estande de exemplo que o projeto monta automaticamente: uma mesa, três livros e a luz de destaque.",
+          "legenda": "Visualização ilustrativa do estande de exemplo que o projeto monta automaticamente: uma mesa, três livros e a luz de destaque."
+        },
+        {
+          "passo": 2,
+          "fala": "O painel aparece acima do livro, sempre em pé e virado para o visitante,",
+          "legenda": "O painel aparece acima do livro, sempre em pé e virado para o visitante,"
+        },
+        {
+          "passo": 3,
+          "fala": "mesmo quando ele levanta e gira o livro na mão.",
+          "legenda": "mesmo quando ele levanta e gira o livro na mão."
+        }
+      ]
+    },
+    {
+      "id": "painel",
+      "segmentos": [
+        {
+          "passo": 1,
+          "fala": "No painel aparecem o título, o autor, a capa e o resumo do livro.",
+          "legenda": "No painel aparecem o título, o autor, a capa e o resumo do livro."
+        },
+        {
+          "passo": 2,
+          "fala": "Como a Yúniti não reproduz guif, as animações são convertidas para vídeo ême pê quatro e tocam em repetição.",
+          "legenda": "Como a Unity não reproduz GIF, as animações são convertidas para vídeo MP4 e tocam em loop."
+        },
+        {
+          "passo": 3,
+          "fala": "E cada painel já tem o botão Iniciar Desafio, reservado para os minijogos.",
+          "legenda": "E cada painel já tem o botão \"Iniciar Desafio\", reservado para os minijogos."
+        }
+      ]
+    },
+    {
+      "id": "arquitetura",
+      "segmentos": [
+        {
+          "passo": 0,
+          "fala": "No código, cada responsabilidade fica num script separado.",
+          "legenda": "No código, cada responsabilidade fica num script separado."
+        },
+        {
+          "passo": 1,
+          "fala": "O Livro Pópáp controla quando o painel abre e fecha.",
+          "legenda": "O LivroPopup controla quando o painel abre e fecha."
+        },
+        {
+          "passo": 2,
+          "fala": "O Livro Dáta guarda os dados de cada livro num arquivo próprio, fácil de editar.",
+          "legenda": "O LivroData guarda os dados de cada livro num arquivo próprio, fácil de editar."
+        },
+        {
+          "passo": 3,
+          "fala": "Outro script mantém o painel virado para o jogador, e a zona de destaque acende as luzes dos estandes.",
+          "legenda": "O PopupOlharParaJogador mantém o painel virado para o jogador, e a EstandeZonaDestaque acende as luzes dos estandes."
+        },
+        {
+          "passo": 4,
+          "fala": "Assim, novos livros e novos minijogos entram sem reescrever a base do projeto.",
+          "legenda": "Assim, novos livros e novos minijogos entram sem reescrever a base do projeto."
+        }
+      ]
+    },
+    {
+      "id": "automacao",
+      "segmentos": [
+        {
+          "passo": 1,
+          "fala": "Para acelerar o trabalho da equipe, criamos um menu Sebraê Lab dentro da Yúniti.",
+          "legenda": "Para acelerar o trabalho da equipe, criamos um menu Sebraelab dentro da Unity."
+        },
+        {
+          "passo": 2,
+          "fala": "Com um clique, o configurador automático instala o pacote de renderização, prepara o jogador de realidade virtual e ativa o Méta Kuést,",
+          "legenda": "Com um clique, o configurador automático instala o URP, prepara o jogador de realidade virtual e ativa o Meta Quest,"
+        },
+        {
+          "passo": 3,
+          "fala": "e ainda monta a cena com um estande de exemplo.",
+          "legenda": "e ainda monta a cena com um estande de exemplo."
+        },
+        {
+          "passo": 4,
+          "fala": "Outro clique transforma qualquer modelo de livro em um livro interativo.",
+          "legenda": "Outro clique transforma qualquer modelo de livro em um livro interativo."
+        }
+      ]
+    },
+    {
+      "id": "testepc",
+      "segmentos": [
+        {
+          "passo": 1,
+          "fala": "Nem todo mundo da equipe tem óculos de realidade virtual em casa.",
+          "legenda": "Nem todo mundo da equipe tem óculos de realidade virtual em casa."
+        },
+        {
+          "passo": 2,
+          "fala": "Por isso, criamos um modo de teste no computador: as teclas dáblio, á, ésse e dê andam, o mouse olha, e a tecla é abre o painel do livro.",
+          "legenda": "Por isso, criamos um modo de teste no computador: W, A, S e D andam, o mouse olha e a tecla E abre o painel do livro."
+        },
+        {
+          "passo": 3,
+          "fala": "Quando um óculos está conectado, a mesma cena troca sozinha para o modo de realidade virtual.",
+          "legenda": "Quando um óculos está conectado, a mesma cena troca sozinha para o modo de realidade virtual."
+        }
+      ]
+    },
+    {
+      "id": "fluxo",
+      "segmentos": [
+        {
+          "passo": 1,
+          "fala": "Organizamos o desenvolvimento no Guít Rãb, com uma bránch para cada tarefa e revisão de código antes de juntar tudo na versão principal.",
+          "legenda": "Organizamos o desenvolvimento no GitHub, com uma branch para cada tarefa e revisão (Pull Request) antes de juntar tudo na versão principal."
+        },
+        {
+          "passo": 2,
+          "fala": "Modelos e vídeos pesados vão pelo Guít éle éfe ésse.",
+          "legenda": "Modelos e vídeos pesados vão pelo Git LFS."
+        },
+        {
+          "passo": 3,
+          "fala": "Também usamos inteligência artificial como assistente de programação, sempre com as mudanças revisadas pela equipe.",
+          "legenda": "Também usamos inteligência artificial como assistente de programação, sempre com as mudanças revisadas pela equipe."
+        }
+      ]
+    },
+    {
+      "id": "roadmap",
+      "segmentos": [
+        {
+          "passo": 1,
+          "fala": "Até aqui, concluímos a estrutura do projeto, os scripts de interação e a configuração automática.",
+          "legenda": "Até aqui, concluímos a estrutura do projeto, os scripts de interação e a configuração automática."
+        },
+        {
+          "passo": 2,
+          "fala": "Os próximos passos são importar o modelo 3D do Sebraê Lab e cadastrar os livros da exposição, com seus resumos e animações.",
+          "legenda": "Os próximos passos são importar o modelo 3D do Sebraelab e cadastrar os livros da exposição, com seus resumos e animações."
+        },
+        {
+          "passo": 3,
+          "fala": "Depois, vamos testar e otimizar a experiência no Méta Kuést. Por fim, vêm os minijogos de cada livro.",
+          "legenda": "Depois, vamos testar e otimizar a experiência no Meta Quest. Por fim, vêm os minijogos de cada livro."
+        }
+      ]
+    },
+    {
+      "id": "encerramento",
+      "segmentos": [
+        {
+          "passo": 1,
+          "fala": "O Sebraê Lab vê érre mostra como a realidade virtual pode aproximar as pessoas dos livros e do ambiente de inovação do Sebraê.",
+          "legenda": "O Sebraelab VR mostra como a realidade virtual pode aproximar as pessoas dos livros e do ambiente de inovação do Sebrae."
+        },
+        {
+          "passo": 2,
+          "fala": "Obrigado pela atenção!",
+          "legenda": "Obrigado pela atenção!"
+        }
+      ]
+    }
+  ]
+}

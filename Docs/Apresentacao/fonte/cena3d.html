@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Sebraelab VR - Visualização 3D</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #0a0f1d; font-family: 'Inter', sans-serif; color: #e8eefc; }
+  #palco { position: relative; width: 1920px; height: 1080px; }
+  canvas { position: absolute; inset: 0; }
+  header { position: absolute; top: 44px; left: 96px; right: 96px; display: flex; justify-content: space-between; align-items: center;
+    font-size: 22px; color: #c9d5ee; font-weight: 600; z-index: 5; text-shadow: 0 2px 10px rgba(0,0,0,.6); }
+  header .marca { display: flex; align-items: center; gap: 12px; color: #fff; }
+  header .marca svg { width: 30px; height: 30px; color: #22d3ee; }
+  header .direita { display: flex; gap: 22px; align-items: center; }
+  header .contador { color: #fff; background: rgba(10,15,29,.55); border: 1px solid rgba(255,255,255,.14); padding: 6px 14px; border-radius: 999px; font-size: 20px; }
+  #etiqueta { position: absolute; top: 112px; left: 96px; z-index: 5; display: flex; gap: 14px; align-items: center; }
+  #etiqueta .tag { font-size: 22px; font-weight: 700; padding: 10px 18px; border-radius: 999px; background: rgba(251,191,36,.16); color: #fbbf24; border: 1px solid rgba(251,191,36,.35); }
+  #etiqueta .det { font-size: 22px; color: #c9d5ee; text-shadow: 0 2px 10px rgba(0,0,0,.7); }
+
+  #popup { position: absolute; width: 340px; z-index: 4; transform-origin: 50% 100%; pointer-events: none;
+    background: rgba(18,23,33,.95); border-radius: 18px; padding: 20px 22px; border: 1px solid rgba(255,255,255,.10); box-shadow: 0 24px 60px rgba(0,0,0,.55); }
+  #popup .t { font-size: 25px; font-weight: 800; text-align: center; }
+  #popup .a { font-size: 17px; font-style: italic; color: #bfcbe6; text-align: center; margin-top: 4px; }
+  #popup .linha { display: flex; gap: 14px; margin-top: 14px; align-items: flex-start; }
+  #popup .capa { width: 60px; height: 86px; border-radius: 6px; background: linear-gradient(160deg, #2563eb, #0e7490); flex: none; display: flex; align-items: center; justify-content: center; }
+  #popup .capa svg { width: 36px; height: 36px; color: #fff; }
+  #popup .r { font-size: 16px; line-height: 1.45; color: #e6ebf5; }
+  #popup .video { margin-top: 12px; height: 96px; border-radius: 10px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  #popup .video svg { width: 44px; height: 44px; color: rgba(255,255,255,.9); position: relative; }
+  #popup .video .tag { position: absolute; top: 8px; right: 8px; font-size: 13px; font-weight: 700; padding: 4px 8px; border-radius: 6px; background: rgba(0,0,0,.45); }
+  #popup .seta { position: absolute; left: 50%; bottom: -12px; width: 24px; height: 24px; margin-left: -12px; background: rgba(18,23,33,.95);
+    transform: rotate(45deg); border-right: 1px solid rgba(255,255,255,.10); border-bottom: 1px solid rgba(255,255,255,.10); }
+
+  #legenda { position: absolute; left: 50%; bottom: 48px; transform: translateX(-50%); max-width: 1740px; width: max-content;
+    background: rgba(5,8,18,.78); border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 16px 30px;
+    font-size: 31px; line-height: 1.35; font-weight: 500; text-align: center; color: #fff; z-index: 10; display: none; }
+  #fade { position: absolute; inset: 0; background: #05070d; z-index: 20; opacity: 0; }
+  #topo { position: absolute; left: 0; right: 0; top: 0; height: 230px; z-index: 3; background: linear-gradient(rgba(5,8,18,.82), rgba(5,8,18,0)); }
+</style>
+</head>
+<body>
+<div id="palco">
+  <header>
+    <div class="marca">{{icone:glasses}} Sebraelab VR</div>
+    <div class="direita"><span>Tecnologias Emergentes</span><span class="contador">06 / 13</span></div>
+  </header>
+  <div id="etiqueta"><span class="tag">Visualização ilustrativa</span><span class="det">estande de exemplo criado pelo configurador</span></div>
+  <div id="popup">
+    <div class="t">Livro de exemplo 2</div>
+    <div class="a">Nome do autor</div>
+    <div class="linha"><div class="capa">{{icone:book-open}}</div>
+      <div class="r">Resumo do livro, vindo do asset “Dados do Livro”.</div></div>
+    <div class="video" id="video">{{icone:play}}<span class="tag">MP4 · loop</span></div>
+    <div class="seta"></div>
+  </div>
+  <div id="topo"></div>
+  <div id="legenda"></div>
+  <div id="fade"></div>
+</div>
+
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js"}}</script>
+<script type="module">
+import * as THREE from 'three';
+
+const L = 1920, A = 1080;
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(L, A); renderer.setPixelRatio(1);
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.25;
+document.getElementById('palco').prepend(renderer.domElement);
+
+const cena = new THREE.Scene();
+cena.background = new THREE.Color(0x0b1222);
+cena.fog = new THREE.Fog(0x0b1222, 9, 20);
+const camera = new THREE.PerspectiveCamera(42, L / A, 0.05, 60);
+
+// Luz ambiente e principal
+cena.add(new THREE.HemisphereLight(0xd6e2ff, 0x2a3142, 1.6));
+const preenchimento = new THREE.DirectionalLight(0x9ec5ff, 0.6); preenchimento.position.set(-4, 3, 5); cena.add(preenchimento);
+const sol = new THREE.DirectionalLight(0xffffff, 1.3);
+sol.position.set(3, 6, 4); cena.add(sol);
+
+// Piso e grade
+const piso = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshStandardMaterial({ color: 0x46506a, roughness: 0.92 }));
+piso.rotation.x = -Math.PI / 2; piso.receiveShadow = true; cena.add(piso);
+const grade = new THREE.GridHelper(60, 60, 0x3b4a66, 0x34405a); grade.position.y = 0.002;
+grade.material.transparent = true; grade.material.opacity = 0.35; cena.add(grade);
+
+// Parede do fundo com o nome da exposição
+function texturaTexto(linhas) {
+  const c = document.createElement('canvas'); c.width = 2048; c.height = 512;
+  const g = c.getContext('2d');
+  g.fillStyle = '#1a2335'; g.fillRect(0, 0, c.width, c.height);
+  g.fillStyle = '#22d3ee'; g.fillRect(0, 470, c.width, 10);
+  g.textAlign = 'center'; g.fillStyle = '#e8eefc';
+  g.font = '800 150px Inter'; g.fillText(linhas[0], c.width / 2, 230);
+  g.fillStyle = '#9fb0d0'; g.font = '600 80px Inter'; g.fillText(linhas[1], c.width / 2, 370);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+const parede = new THREE.Mesh(new THREE.PlaneGeometry(14, 4), new THREE.MeshStandardMaterial({ color: 0x2a3550, roughness: 1 }));
+parede.position.set(0, 2, -2.6); cena.add(parede);
+const placa = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 0.9), new THREE.MeshStandardMaterial({ map: texturaTexto(['SEBRAELAB', 'Exposição de Livros']), roughness: 0.8 }));
+placa.position.set(0, 2.05, -2.58); cena.add(placa);
+
+// Estande: mesa + livros
+const corLivros = [0xc0392b, 0x2563eb, 0x16a34a];
+function criarEstande(x, z, rot, livros) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rot;
+  const mesa = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.75, 0.6), new THREE.MeshStandardMaterial({ color: 0x6b4a32, roughness: 0.7 }));
+  mesa.position.y = 0.375; mesa.castShadow = true; mesa.receiveShadow = true; g.add(mesa);
+  const tampo = new THREE.Mesh(new THREE.BoxGeometry(1.44, 0.03, 0.64), new THREE.MeshStandardMaterial({ color: 0x8a6446, roughness: 0.6 }));
+  tampo.position.y = 0.765; tampo.receiveShadow = true; g.add(tampo);
+  const lista = [];
+  for (let i = 0; i < 3; i++) {
+    const livro = new THREE.Group();
+    livro.position.set((i - 1) * 0.4, 0.78 + 0.015, 0); livro.rotation.y = THREE.MathUtils.degToRad((i - 1) * -12);
+    const corpo = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.03, 0.23), new THREE.MeshStandardMaterial({ color: (livros || corLivros)[i], roughness: 0.55 }));
+    corpo.castShadow = true; livro.add(corpo);
+    const paginas = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.024, 0.222), new THREE.MeshStandardMaterial({ color: 0xf1ead8, roughness: 0.9 }));
+    paginas.position.x = 0.006; livro.add(paginas);
+    g.add(livro); lista.push(livro);
+  }
+  cena.add(g); return { grupo: g, livros: lista };
+}
+const principal = criarEstande(0, 0, 0);
+criarEstande(-3.1, -0.9, 0.35, [0x7c3aed, 0xea580c, 0x0891b2]);
+criarEstande(3.1, -0.9, -0.35, [0xdb2777, 0x65a30d, 0x4f46e5]);
+
+// Contorno do livro "em hover"
+const livroAlvo = principal.livros[1];
+const contorno = new THREE.Mesh(new THREE.BoxGeometry(0.175, 0.045, 0.245),
+  new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0, side: THREE.BackSide }));
+livroAlvo.add(contorno);
+
+// Luz de destaque (spot) + cone visível
+const spot = new THREE.SpotLight(0xfff1d6, 0, 6, THREE.MathUtils.degToRad(32), 0.45, 1.6);
+spot.position.set(0, 2.7, 0.35); spot.target.position.set(0, 0.77, 0); spot.castShadow = true;
+spot.shadow.mapSize.set(1024, 1024); spot.shadow.bias = -0.0005;
+cena.add(spot, spot.target);
+const cone = new THREE.Mesh(new THREE.ConeGeometry(0.85, 1.95, 48, 1, true),
+  new THREE.MeshBasicMaterial({ color: 0xfff1d6, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }));
+cone.position.set(0, 1.74, 0.17); cone.rotation.x = -0.18; cena.add(cone);
+const luminaria = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.13, 0.12, 32), new THREE.MeshStandardMaterial({ color: 0x222831, emissive: 0x000000 }));
+luminaria.position.copy(spot.position); cena.add(luminaria);
+
+// "Mão" do visitante (controle VR estilizado)
+const mao = new THREE.Group();
+const cabo = new THREE.Mesh(new THREE.CapsuleGeometry(0.022, 0.09, 8, 16), new THREE.MeshStandardMaterial({ color: 0xf2f5fa, roughness: 0.35 }));
+cabo.rotation.x = 0.9;
+const ponta = new THREE.Mesh(new THREE.SphereGeometry(0.03, 24, 12), new THREE.MeshStandardMaterial({ color: 0x22d3ee, emissive: 0x22d3ee, emissiveIntensity: 1.2 }));
+ponta.position.set(0, 0.035, -0.04);
+mao.add(cabo, ponta); cena.add(mao);
+
+// ---------------- animação ----------------
+const lerp = THREE.MathUtils.lerp, clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const suave = p => p * p * (3 - 2 * p);
+const prog = (t, a, b) => suave(clamp((t - a) / (b - a), 0, 1));
+const v3 = (x, y, z) => new THREE.Vector3(x, y, z);
+const posLivro0 = livroAlvo.position.clone(), rotLivro0 = livroAlvo.rotation.clone();
+const FADE = 0.35;
+const popup = document.getElementById('popup'), legenda = document.getElementById('legenda'), fade = document.getElementById('fade');
+
+window.desenhar = function (dados, t) {
+  const s = dados.segmentos, D = dados.duracao;
+  const s2 = s[1].inicio, s3 = s[2].inicio;
+  const tLuz = s[0].inicio + (s[0].fim - s[0].inicio) * 0.7;
+
+  // câmera: aproxima até o estande, depois órbita lenta
+  const pa = prog(t, 0, s2 - 0.2);
+  const pb = prog(t, s2 - 0.2, D);
+  const cam = v3(lerp(0.0, 0.25, pa), lerp(1.75, 1.62, pa), lerp(6.4, 2.35, pa));
+  cam.x = lerp(cam.x, -0.45, pb); cam.z = lerp(cam.z, 2.2, pb); cam.y = lerp(cam.y, 1.6, pb);
+  camera.position.copy(cam);
+  camera.lookAt(0, lerp(1.15, 0.95, pa), lerp(-0.6, 0, pa));
+
+  // luz de destaque
+  const luz = prog(t, tLuz, tLuz + 0.6);
+  spot.intensity = 9 * luz; cone.material.opacity = 0.04 * luz;
+  luminaria.material.emissive.setRGB(luz * 1.0, luz * 0.92, luz * 0.75);
+
+  // mão se aproxima do livro do meio
+  const pm = prog(t, s2 - 1.3, s2 - 0.1);
+  const perto = v3(0.07, 0.86, 0.16);
+  const maoPos = v3(lerp(0.6, perto.x, pm), lerp(1.05, perto.y, pm), lerp(1.2, perto.z, pm));
+  // pegar e girar o livro
+  const pg = prog(t, s3, s3 + 1.6);
+  const giro = Math.max(0, t - (s3 + 1.6));
+  const livroPos = v3(lerp(posLivro0.x, 0.02, pg), lerp(posLivro0.y, 1.0, pg), lerp(posLivro0.z, 0.45, pg));
+  livroAlvo.position.copy(livroPos);
+  livroAlvo.rotation.set(lerp(rotLivro0.x, 0.75, pg) + 0.15 * Math.sin(giro * 1.3) * pg,
+                         lerp(rotLivro0.y, 0.9, pg) + 0.45 * Math.sin(giro * 0.9) * pg,
+                         lerp(rotLivro0.z, 0.35, pg));
+  if (pg > 0) maoPos.lerp(v3(livroPos.x + 0.05, livroPos.y + 0.02, livroPos.z + 0.1), pg);
+  mao.position.copy(maoPos);
+  mao.visible = t > s2 - 1.4;
+
+  // contorno de "hover"
+  contorno.material.opacity = 0.85 * prog(t, s2 - 0.3, s2);
+
+  renderer.render(cena, camera);
+
+  // painel (sempre em pé, segue o livro)
+  const ancora = livroPos.clone().add(v3(0, 0.16, 0)).project(camera);
+  const x = (ancora.x * 0.5 + 0.5) * L, y = (-ancora.y * 0.5 + 0.5) * A;
+  const pp = prog(t, s2 - 0.05, s2 + 0.4);
+  popup.style.left = (x - 170) + 'px'; popup.style.top = (y - popup.offsetHeight - 14) + 'px';
+  popup.style.opacity = pp; popup.style.transform = `scale(${0.85 + 0.15 * pp})`;
+  // "vídeo" tocando em loop
+  const fase = (t * 40) % 360;
+  document.getElementById('video').style.background = `linear-gradient(${fase}deg, #1e293b, #0f766e 55%, #1d4ed8)`;
+
+  // legenda e fade
+  let atual = null; s.forEach(seg => { if (t >= seg.inicio) atual = seg; });
+  if (atual && t < D - FADE) { legenda.textContent = atual.legenda; legenda.style.display = 'block'; } else legenda.style.display = 'none';
+  let f = 0; if (t < FADE) f = 1 - t / FADE; else if (t > D - FADE) f = (t - (D - FADE)) / FADE;
+  fade.style.opacity = clamp(f, 0, 1);
+};
+window.pronto3D = true;
+</script>
+</body>
+</html>

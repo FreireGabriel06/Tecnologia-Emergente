@@ -7,6 +7,7 @@ com a mão e vê um popup com título, autor, resumo, capa e uma animação (GIF
 | Documento | Para que serve |
 | --- | --- |
 | [`Docs/CONFIGURACAO_UNITY.md`](Docs/CONFIGURACAO_UNITY.md) | Passo a passo no Unity: abrir e configurar o projeto, cenário, livros, vídeos, build para o Quest |
+| [`Docs/Apresentacao/`](Docs/Apresentacao/) | Vídeo de apresentação do projeto (narrado, ~4 min) e o roteiro de cada cena |
 | [`Docs/GDD_Sebraelab_VR.docx`](Docs/GDD_Sebraelab_VR.docx) | Game Design Document |
 | [`Docs/GUIDE_JOGO_SEBRAELAB.txt`](Docs/GUIDE_JOGO_SEBRAELAB.txt) | Guia original de implementação manual |
 

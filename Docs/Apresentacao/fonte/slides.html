@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Sebraelab VR - Slides</title>
+<style>
+  :root {
+    --bg: #0a0f1d; --texto: #e8eefc; --suave: #9fb0d0; --fraco: #6b7a99;
+    --azul: #3b82f6; --ciano: #22d3ee; --verde: #34d399; --ambar: #fbbf24; --rosa: #f472b6; --roxo: #a78bfa;
+    --cartao: rgba(255,255,255,0.045); --borda: rgba(255,255,255,0.10);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg);
+    font-family: 'Inter', 'DejaVu Sans', sans-serif; color: var(--texto); -webkit-font-smoothing: antialiased; }
+  #palco { position: relative; width: 1920px; height: 1080px; overflow: hidden;
+    background:
+      radial-gradient(1100px 700px at 88% 6%, rgba(59,130,246,.20), transparent 60%),
+      radial-gradient(900px 620px at 4% 98%, rgba(34,211,238,.13), transparent 60%),
+      linear-gradient(160deg, #0a0f1d 0%, #0d1530 55%, #0a0f1d 100%); }
+  #grade { position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+    background-size: 64px 64px;
+    -webkit-mask-image: radial-gradient(ellipse at 50% 45%, #000 35%, transparent 80%); }
+  header { position: absolute; top: 44px; left: 96px; right: 96px; display: flex; justify-content: space-between; align-items: center;
+    font-size: 22px; color: var(--suave); font-weight: 600; z-index: 5; }
+  header .marca { display: flex; align-items: center; gap: 12px; color: var(--texto); }
+  header .marca svg { width: 30px; height: 30px; color: var(--ciano); }
+  header .direita { display: flex; gap: 22px; align-items: center; }
+  header .contador { font-variant-numeric: tabular-nums; color: var(--texto); background: rgba(255,255,255,.07); border: 1px solid var(--borda);
+    padding: 6px 14px; border-radius: 999px; font-size: 20px; }
+
+  .cena { position: absolute; inset: 0; padding: 140px 120px 0; display: none; }
+  .cena.ativa { display: block; }
+  .eyebrow { font-size: 21px; letter-spacing: .2em; text-transform: uppercase; color: var(--ciano); font-weight: 700; margin-bottom: 12px; }
+  h1 { font-size: 66px; font-weight: 800; margin: 0 0 44px; letter-spacing: -0.02em; line-height: 1.05; }
+  .cartao { background: var(--cartao); border: 1px solid var(--borda); border-radius: 26px; padding: 34px; }
+  .icone { display: inline-flex; align-items: center; justify-content: center; width: 76px; height: 76px; border-radius: 22px; flex: none; }
+  .icone svg { width: 40px; height: 40px; }
+  .i-azul { background: rgba(59,130,246,.16); color: #7cb0ff; } .i-ciano { background: rgba(34,211,238,.14); color: var(--ciano); }
+  .i-verde { background: rgba(52,211,153,.14); color: var(--verde); } .i-ambar { background: rgba(251,191,36,.14); color: var(--ambar); }
+  .i-rosa { background: rgba(244,114,182,.14); color: var(--rosa); } .i-roxo { background: rgba(167,139,250,.15); color: var(--roxo); }
+  .titulo-cartao { font-size: 32px; font-weight: 700; margin: 24px 0 10px; letter-spacing: -0.01em; }
+  .texto-cartao { font-size: 24px; line-height: 1.45; color: var(--suave); }
+  .mono { font-family: 'JetBrains Mono', 'DejaVu Sans Mono', monospace; }
+
+  #legenda { position: absolute; left: 50%; bottom: 48px; transform: translateX(-50%); max-width: 1740px; width: max-content;
+    background: rgba(5,8,18,.78); border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 16px 30px;
+    font-size: 31px; line-height: 1.35; font-weight: 500; text-align: center; color: #fff; z-index: 10; display: none; }
+  #fade { position: absolute; inset: 0; background: #05070d; z-index: 20; opacity: 0; }
+
+  /* ---------- abertura / encerramento ---------- */
+  .centro { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding-bottom: 120px; }
+  .selo { width: 168px; height: 168px; border-radius: 48px; display: flex; align-items: center; justify-content: center; gap: 0;
+    background: linear-gradient(140deg, rgba(59,130,246,.35), rgba(34,211,238,.25)); border: 1px solid rgba(255,255,255,.18);
+    box-shadow: 0 30px 80px rgba(34,211,238,.18); margin-bottom: 44px; color: #fff; }
+  .selo svg { width: 92px; height: 92px; }
+  .grande { font-size: 150px; font-weight: 800; letter-spacing: -0.04em; line-height: 1;
+    background: linear-gradient(100deg, #ffffff 30%, #7dd3fc 70%, #22d3ee); -webkit-background-clip: text; color: transparent; }
+  .sub { font-size: 46px; font-weight: 500; color: #cdd8f3; margin-top: 26px; letter-spacing: -0.01em; }
+  .chips { display: flex; gap: 18px; margin-top: 46px; justify-content: center; flex-wrap: wrap; }
+  .chip { font-size: 26px; padding: 12px 24px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid var(--borda); color: #dbe5ff; }
+  .chip b { color: var(--ciano); font-weight: 700; }
+
+  /* ---------- grades de cartões ---------- */
+  .linha4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; margin-top: 40px; }
+  .linha4 .cartao { min-height: 400px; padding: 40px 36px; }
+  .linha4 .icone { width: 96px; height: 96px; border-radius: 28px; } .linha4 .icone svg { width: 50px; height: 50px; }
+  .linha4 .titulo-cartao { font-size: 34px; margin-top: 34px; } .linha4 .texto-cartao { font-size: 26px; }
+  .grade2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+  .grade2 .cartao { display: flex; gap: 30px; align-items: flex-start; padding: 36px 40px; }
+  .grade2 .titulo-cartao { margin-top: 4px; }
+  #cena-pilares .grade2 { margin-top: 30px; } #cena-pilares .grade2 .cartao { min-height: 250px; padding-top: 46px; }
+  .grade-tec { display: grid; grid-template-columns: repeat(4, 1fr); gap: 26px; }
+  .tec { display: flex; flex-direction: column; gap: 6px; padding: 30px; min-height: 250px; }
+  .tec .nome { font-size: 33px; font-weight: 800; margin-top: 20px; letter-spacing: -0.01em; }
+  .tec .papel { font-size: 22px; color: var(--suave); line-height: 1.4; }
+
+  /* ---------- experiência ---------- */
+  .fluxo { display: flex; align-items: stretch; gap: 0; margin-top: 80px; }
+  .fluxo .etapa { min-height: 400px; padding-top: 56px; }
+  .etapa { flex: 1; text-align: center; padding: 40px 18px 34px; position: relative; }
+  .etapa .num { position: absolute; top: -18px; left: 50%; margin-left: -20px; width: 40px; height: 40px; border-radius: 50%;
+    background: var(--azul); color: #fff; font-weight: 800; font-size: 21px; display: flex; align-items: center; justify-content: center; }
+  .etapa .icone { width: 100px; height: 100px; border-radius: 30px; } .etapa .icone svg { width: 52px; height: 52px; }
+  .etapa .rot { font-size: 30px; font-weight: 700; margin-top: 26px; }
+  .etapa .det { font-size: 22px; color: var(--suave); margin-top: 10px; line-height: 1.4; }
+  .seta { width: 56px; display: flex; align-items: center; justify-content: center; color: var(--fraco); flex: none; }
+  .seta svg { width: 40px; height: 40px; }
+
+  /* ---------- painel ---------- */
+  .duas-col { display: grid; grid-template-columns: 640px 1fr; gap: 80px; align-items: start; }
+  .popup { width: 600px; background: rgba(18,23,33,.96); border-radius: 22px; padding: 26px 30px; border: 1px solid rgba(255,255,255,.08);
+    box-shadow: 0 40px 90px rgba(0,0,0,.55); margin-top: -10px; }
+  .popup .linha { display: flex; gap: 22px; align-items: flex-start; margin-top: 18px; }
+  .popup .t { font-size: 34px; font-weight: 800; text-align: center; }
+  .popup .a { font-size: 24px; font-style: italic; color: #bfcbe6; text-align: center; margin-top: 8px; }
+  .popup .capa { height: 150px; margin: 0; width: 104px; flex: none; border-radius: 8px; background: linear-gradient(160deg, #2563eb, #0e7490);
+    display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.9); box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+  .popup .capa svg { width: 58px; height: 58px; }
+  .popup .r { font-size: 21px; line-height: 1.5; color: #e6ebf5; margin: 0; }
+  .popup .video { margin-top: 18px; height: 190px; border-radius: 12px; position: relative; overflow: hidden;
+    background: linear-gradient(120deg, #1e293b, #0f766e 55%, #1d4ed8); display: flex; align-items: center; justify-content: center; }
+  .popup .video svg { width: 74px; height: 74px; color: rgba(255,255,255,.85); }
+  .popup .video .tag { position: absolute; top: 14px; right: 14px; font-size: 18px; font-weight: 700; padding: 6px 12px; border-radius: 8px; background: rgba(0,0,0,.45); }
+  .popup .botao { margin-top: 18px; height: 56px; border-radius: 12px; background: #005eb8; display: flex; align-items: center; justify-content: center;
+    font-size: 26px; font-weight: 800; position: relative; }
+  .popup .botao .tag { position: absolute; right: 14px; font-size: 16px; font-weight: 700; background: rgba(255,255,255,.18); padding: 5px 10px; border-radius: 8px; }
+  .callouts { display: flex; flex-direction: column; gap: 26px; margin-top: 10px; }
+  .callouts .cartao { display: flex; gap: 28px; align-items: flex-start; padding: 32px 36px; }
+  .callouts .titulo-cartao { margin-top: 2px; }
+
+  /* ---------- arquitetura ---------- */
+  .grade3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; }
+  .script { padding: 30px 32px; min-height: 196px; }
+  .script .nome { font-size: 28px; font-weight: 700; color: #a5d8ff; display: flex; align-items: center; gap: 14px; }
+  .script .nome svg { width: 30px; height: 30px; color: var(--ciano); flex: none; }
+  .script .desc { font-size: 23px; color: var(--suave); line-height: 1.45; margin-top: 14px; }
+  .faixa { margin-top: 28px; padding: 22px 32px; border-radius: 20px; font-size: 27px; font-weight: 600;
+    background: linear-gradient(90deg, rgba(59,130,246,.18), rgba(34,211,238,.10)); border: 1px solid rgba(125,211,252,.25); display: flex; gap: 16px; align-items: center; }
+  .faixa svg { width: 34px; height: 34px; color: var(--ciano); flex: none; }
+
+  /* ---------- automação ---------- */
+  .unity { width: 860px; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,.12); box-shadow: 0 40px 90px rgba(0,0,0,.5); }
+  .unity .barra { background: #1f1f1f; height: 52px; display: flex; align-items: center; gap: 30px; padding: 0 22px; font-size: 21px; color: #cfcfcf; }
+  .unity .barra .ativo { background: #3a5f9c; color: #fff; padding: 6px 12px; border-radius: 6px; }
+  .unity .corpo { background: #2b2b2b; padding: 16px 0 260px 330px; position: relative; }
+  .unity .menu { background: #383838; border: 1px solid #1a1a1a; border-radius: 8px; width: 520px; padding: 10px 0; box-shadow: 0 16px 40px rgba(0,0,0,.6); }
+  .unity .item { font-size: 21px; padding: 12px 22px; color: #e4e4e4; display: flex; justify-content: space-between; }
+  .unity .item.sel { background: #2d5aa0; }
+  .unity .sep { height: 1px; background: #555; margin: 8px 0; }
+  .unity .sub-menu { position: absolute; left: 860px; }
+  .lista-check { display: flex; flex-direction: column; gap: 20px; }
+  .lista-check .linha { display: flex; gap: 20px; align-items: center; font-size: 28px; font-weight: 600; padding: 22px 28px; }
+  .lista-check .linha svg { width: 36px; height: 36px; color: var(--verde); flex: none; }
+
+  /* ---------- teste no PC ---------- */
+  .teclas { display: grid; grid-template-columns: repeat(3, 96px); grid-template-rows: 96px 96px; gap: 14px; }
+  .tecla { border-radius: 18px; background: linear-gradient(#2a3550, #1b2338); border: 1px solid rgba(255,255,255,.14); box-shadow: 0 8px 0 #0c1222;
+    display: flex; align-items: center; justify-content: center; font-size: 44px; font-weight: 800; }
+  .tecla.w { grid-column: 2; grid-row: 1; } .tecla.a { grid-column: 1; grid-row: 2; } .tecla.s { grid-column: 2; grid-row: 2; } .tecla.d { grid-column: 3; grid-row: 2; } .tecla.e { background: linear-gradient(#1d4ed8, #1e3a8a); }
+  .controle { display: flex; gap: 90px; align-items: flex-end; }
+  .mouse-grande svg { width: 110px; height: 110px; }
+  .rotulo { font-size: 26px; color: var(--suave); margin-top: 18px; text-align: center; font-weight: 600; }
+  .troca { display: flex; align-items: center; gap: 30px; padding: 26px 40px; margin-top: 34px; }
+  .troca .icone { width: 92px; height: 92px; } .troca .icone svg { width: 50px; height: 50px; }
+
+  /* ---------- fluxo git ---------- */
+  .git { padding: 26px 44px; }
+  .git svg.diag { width: 100%; height: 250px; }
+
+  /* ---------- roadmap ---------- */
+  .roadmap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+  .coluna { padding: 34px; min-height: 470px; }
+  .coluna .status { display: inline-flex; gap: 10px; align-items: center; font-size: 22px; font-weight: 800; padding: 8px 16px; border-radius: 999px; }
+  .coluna .status svg { width: 26px; height: 26px; }
+  .st-ok { background: rgba(52,211,153,.15); color: var(--verde); } .st-prox { background: rgba(251,191,36,.15); color: var(--ambar); }
+  .st-depois { background: rgba(167,139,250,.16); color: var(--roxo); }
+  .coluna ul { list-style: none; padding: 0; margin: 28px 0 0; display: flex; flex-direction: column; gap: 22px; }
+  .coluna li { font-size: 27px; line-height: 1.4; padding-left: 34px; position: relative; font-weight: 500; }
+  .coluna li::before { content: ""; position: absolute; left: 0; top: 13px; width: 14px; height: 14px; border-radius: 50%; background: currentColor; opacity: .55; }
+</style>
+</head>
+<body>
+<div id="palco">
+  <div id="grade"></div>
+  <header>
+    <div class="marca">{{icone:glasses}} Sebraelab VR</div>
+    <div class="direita"><span>Tecnologias Emergentes</span><span class="contador" id="contador">01 / 13</span></div>
+  </header>
+
+  <!-- 1. Abertura -->
+  <section class="cena" id="cena-abertura">
+    <div class="centro">
+      <div class="selo" data-passo="0">{{icone:glasses}}</div>
+      <div data-passo="1"><div class="grande">Sebraelab VR</div></div>
+      <div class="sub" data-passo="1">Exposição Interativa de Livros em Realidade Virtual</div>
+      <div class="chips" data-passo="2">
+        <span class="chip">Disciplina: <b>Tecnologias Emergentes</b></span>
+        <span class="chip">Equipe: <b>Eliabe · Emily Freire · Gabriel Freire · JG</b></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Ideia -->
+  <section class="cena" id="cena-ideia">
+    <div data-passo="0"><div class="eyebrow">O projeto</div><h1>A ideia</h1></div>
+    <div class="linha4">
+      <div class="cartao" data-passo="1"><span class="icone i-azul">{{icone:building-2}}</span>
+        <div class="titulo-cartao">Sebraelab em 3D</div><div class="texto-cartao">Réplica tridimensional do espaço físico do Sebraelab.</div></div>
+      <div class="cartao" data-passo="1"><span class="icone i-ciano">{{icone:library-big}}</span>
+        <div class="titulo-cartao">Feira de livros virtual</div><div class="texto-cartao">Estandes com livros expostos para o visitante explorar.</div></div>
+      <div class="cartao" data-passo="2"><span class="icone i-verde">{{icone:hand}}</span>
+        <div class="titulo-cartao">Andar e pegar</div><div class="texto-cartao">Movimento livre e os livros pegos com as próprias mãos.</div></div>
+      <div class="cartao" data-passo="3"><span class="icone i-ambar">{{icone:film}}</span>
+        <div class="titulo-cartao">Resumo, capa e animação</div><div class="texto-cartao">O conteúdo de cada obra aparece na hora.</div></div>
+    </div>
+  </section>
+
+  <!-- 3. Pilares -->
+  <section class="cena" id="cena-pilares">
+    <div data-passo="0"><div class="eyebrow">Game Design Document</div><h1>Pilares do design</h1></div>
+    <div class="grade2">
+      <div class="cartao" data-passo="1"><span class="icone i-azul">{{icone:scan-eye}}</span><div>
+        <div class="titulo-cartao">Fidelidade do cenário</div><div class="texto-cartao">Imersão e fidelidade espacial: o visitante se sente dentro do Sebraelab.</div></div></div>
+      <div class="cartao" data-passo="2"><span class="icone i-verde">{{icone:hand}}</span><div>
+        <div class="titulo-cartao">Interatividade natural</div><div class="texto-cartao">Pegar, girar e aproximar os livros como no mundo real.</div></div></div>
+      <div class="cartao" data-passo="3"><span class="icone i-ambar">{{icone:film}}</span><div>
+        <div class="titulo-cartao">Multimídia dinâmica</div><div class="texto-cartao">Resumos em texto e animações em loop em cada livro.</div></div></div>
+      <div class="cartao" data-passo="4"><span class="icone i-roxo">{{icone:blocks}}</span><div>
+        <div class="titulo-cartao">Arquitetura modular</div><div class="texto-cartao">Minijogos acoplados a cada livro, sem reescrever a base do sistema.</div></div></div>
+    </div>
+  </section>
+
+  <!-- 4. Tecnologias -->
+  <section class="cena" id="cena-tecnologias">
+    <div data-passo="0"><div class="eyebrow">Stack</div><h1>Tecnologias</h1></div>
+    <div class="grade-tec">
+      <div class="cartao tec" data-passo="1"><span class="icone i-azul">{{icone:box}}</span><div class="nome">Unity 6</div><div class="papel">Engine do projeto</div></div>
+      <div class="cartao tec" data-passo="1"><span class="icone i-ciano">{{icone:layers}}</span><div class="nome">URP</div><div class="papel">Renderização otimizada para óculos autônomos</div></div>
+      <div class="cartao tec" data-passo="2"><span class="icone i-verde">{{icone:hand}}</span><div class="nome">XR Interaction Toolkit 3</div><div class="papel">Pegar objetos, locomoção e UI em VR</div></div>
+      <div class="cartao tec" data-passo="3"><span class="icone i-roxo">{{icone:glasses}}</span><div class="nome">OpenXR</div><div class="papel">Padrão aberto que conecta aos óculos</div></div>
+      <div class="cartao tec" data-passo="3"><span class="icone i-rosa">{{icone:headset}}</span><div class="nome">Meta Quest 2 / 3</div><div class="papel">Plataforma-alvo (e PC VR)</div></div>
+      <div class="cartao tec" data-passo="4"><span class="icone i-ambar">{{icone:code-xml}}</span><div class="nome">C#</div><div class="papel">Scripts do projeto</div></div>
+      <div class="cartao tec" data-passo="4"><span class="icone i-azul">{{icone:git-branch}}</span><div class="nome">GitHub + Git LFS</div><div class="papel">Versionamento do código e dos arquivos pesados</div></div>
+    </div>
+  </section>
+
+  <!-- 5. Experiência -->
+  <section class="cena" id="cena-experiencia">
+    <div data-passo="0"><div class="eyebrow">Jogabilidade</div><h1>Como funciona a experiência</h1></div>
+    <div class="fluxo">
+      <div class="cartao etapa" data-passo="1"><span class="num">1</span><span class="icone i-azul">{{icone:door-open}}</span>
+        <div class="rot">Entrada</div><div class="det">Começa na entrada do Sebraelab</div></div>
+      <div class="seta" data-passo="2">{{icone:arrow-right}}</div>
+      <div class="cartao etapa" data-passo="2"><span class="num">2</span><span class="icone i-ciano">{{icone:footprints}}</span>
+        <div class="rot">Andar ou teleportar</div><div class="det">Com o analógico do controle</div></div>
+      <div class="seta" data-passo="3">{{icone:arrow-right}}</div>
+      <div class="cartao etapa" data-passo="3"><span class="num">3</span><span class="icone i-ambar">{{icone:lightbulb}}</span>
+        <div class="rot">Estande em destaque</div><div class="det">A luz acende ao chegar perto</div></div>
+      <div class="seta" data-passo="4">{{icone:arrow-right}}</div>
+      <div class="cartao etapa" data-passo="4"><span class="num">4</span><span class="icone i-verde">{{icone:panel-top}}</span>
+        <div class="rot">Painel do livro</div><div class="det">Abre ao aproximar a mão</div></div>
+      <div class="seta" data-passo="5">{{icone:arrow-right}}</div>
+      <div class="cartao etapa" data-passo="5"><span class="num">5</span><span class="icone i-rosa">{{icone:hand}}</span>
+        <div class="rot">Pegar o livro</div><div class="det">O painel fica aberto até soltar</div></div>
+    </div>
+  </section>
+
+  <!-- 7. Painel -->
+  <section class="cena" id="cena-painel">
+    <div data-passo="0"><div class="eyebrow">Interface</div><h1>O painel do livro</h1></div>
+    <div class="duas-col">
+      <div class="popup" data-passo="0">
+        <div class="t">Livro de exemplo</div>
+        <div class="a">Nome do autor</div>
+        <div class="linha"><div class="capa">{{icone:book-open}}</div>
+        <div class="r">Resumo do livro: uma breve descrição da obra, escrita no asset “Dados do Livro”. Campos vazios somem sozinhos.</div></div>
+        <div class="video">{{icone:play}}<span class="tag">MP4 · loop</span></div>
+        <div class="botao">Iniciar Desafio <span class="tag">em breve</span></div>
+      </div>
+      <div class="callouts">
+        <div class="cartao" data-passo="1"><span class="icone i-azul">{{icone:type}}</span><div>
+          <div class="titulo-cartao">Título, autor, capa e resumo</div><div class="texto-cartao">Vêm do asset “Dados do Livro”: um arquivo por livro, fácil de editar.</div></div></div>
+        <div class="cartao" data-passo="2"><span class="icone i-ambar">{{icone:film}}</span><div>
+          <div class="titulo-cartao">Animação em loop</div><div class="texto-cartao">O GIF é convertido para MP4 e tocado pelo Video Player.</div></div></div>
+        <div class="cartao" data-passo="3"><span class="icone i-roxo">{{icone:gamepad-2}}</span><div>
+          <div class="titulo-cartao">Botão “Iniciar Desafio”</div><div class="texto-cartao">Gancho pronto para os minijogos de cada livro.</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. Arquitetura -->
+  <section class="cena" id="cena-arquitetura">
+    <div data-passo="0"><div class="eyebrow">Código</div><h1>Arquitetura dos scripts</h1></div>
+    <div class="grade3">
+      <div class="cartao script" data-passo="1"><div class="nome mono">{{icone:panel-top}}LivroPopup</div>
+        <div class="desc">Abre e fecha o painel com os eventos de <i>hover</i> e <i>select</i> do XR Grab Interactable.</div></div>
+      <div class="cartao script" data-passo="2"><div class="nome mono">{{icone:file-text}}LivroData</div>
+        <div class="desc">Título, autor, resumo, capa e vídeo de cada livro, num asset próprio.</div></div>
+      <div class="cartao script" data-passo="3"><div class="nome mono">{{icone:eye}}PopupOlharParaJogador</div>
+        <div class="desc">Mantém o painel em pé, acima do livro e virado para o jogador.</div></div>
+      <div class="cartao script" data-passo="3"><div class="nome mono">{{icone:lightbulb}}EstandeZonaDestaque</div>
+        <div class="desc">Acende as luzes e toca um som quando o jogador chega ao estande.</div></div>
+      <div class="cartao script" data-passo="4"><div class="nome mono">{{icone:keyboard}}DesktopPlayerController</div>
+        <div class="desc">Jogador de teste no PC, sem óculos.</div></div>
+      <div class="cartao script" data-passo="4"><div class="nome mono">{{icone:wand-sparkles}}SebraelabConfigurador</div>
+        <div class="desc">Menu e automação dentro do editor da Unity.</div></div>
+    </div>
+    <div class="faixa" data-passo="4">{{icone:blocks}} Modular: novos livros e minijogos entram sem reescrever a base.</div>
+  </section>
+
+  <!-- 9. Automação -->
+  <section class="cena" id="cena-automacao">
+    <div data-passo="0"><div class="eyebrow">Produtividade</div><h1>Automação na Unity</h1></div>
+    <div style="display:grid; grid-template-columns: 860px 1fr; gap: 70px; align-items: start;">
+      <div class="unity" data-passo="1">
+        <div class="barra"><span>File</span><span>Edit</span><span>Assets</span><span>GameObject</span><span class="ativo">Sebraelab</span><span>Window</span><span>Help</span></div>
+        <div class="corpo" style="padding: 0 0 40px 292px;">
+          <div class="menu">
+            <div class="item sel" id="item-config">Configurar projeto VR (automático)</div>
+            <div class="sep"></div>
+            <div class="item" id="item-livro">Livros ▸ Configurar livro selecionado</div>
+            <div class="item">Cenário ▸ Colocar modelo do Sebraelab</div>
+            <div class="item">Cenário ▸ Adicionar colliders</div>
+            <div class="item">Jogador ▸ Criar jogador de teste</div>
+          </div>
+        </div>
+      </div>
+      <div class="lista-check">
+        <div class="cartao linha" data-passo="2">{{icone:circle-check}} Instala o URP</div>
+        <div class="cartao linha" data-passo="2">{{icone:circle-check}} Prepara o jogador VR (XR Origin)</div>
+        <div class="cartao linha" data-passo="2">{{icone:circle-check}} Ativa OpenXR e Meta Quest</div>
+        <div class="cartao linha" data-passo="3">{{icone:circle-check}} Monta a cena com um estande de exemplo</div>
+        <div class="faixa" data-passo="4" style="margin-top:6px">{{icone:mouse-pointer-click}} 1 clique: livro com colisão, física, pegada e painel</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. Teste no PC -->
+  <section class="cena" id="cena-testepc">
+    <div data-passo="0"><div class="eyebrow">Testes</div><h1>Testar sem óculos</h1></div>
+    <div class="cartao" data-passo="1" style="display:inline-flex; gap:22px; align-items:center; padding:22px 30px; font-size:28px; font-weight:600;">
+      <span class="icone i-ciano" style="width:64px;height:64px">{{icone:users}}</span> Nem todo mundo da equipe tem óculos VR em casa
+    </div>
+    <div class="controle" data-passo="2" style="margin-top: 36px;">
+      <div><div class="teclas"><div class="tecla w">W</div><div class="tecla a">A</div><div class="tecla s">S</div><div class="tecla d">D</div></div><div class="rotulo">andar (Shift corre)</div></div>
+      <div style="text-align:center"><span class="icone i-azul mouse-grande" style="width:206px;height:206px;border-radius:40px">{{icone:mouse}}</span><div class="rotulo">olhar</div></div>
+      <div style="text-align:center"><div class="tecla e" style="width:206px;height:206px;font-size:100px">E</div><div class="rotulo">abrir o painel do livro</div></div>
+    </div>
+    <div class="cartao troca" data-passo="3">
+      <span class="icone i-azul">{{icone:monitor}}</span><span style="color:var(--fraco)">{{icone:arrow-right}}</span>
+      <span class="icone i-rosa">{{icone:headset}}</span>
+      <div style="font-size:30px;font-weight:700">Óculos conectado? A mesma cena troca sozinha para o modo VR.</div>
+    </div>
+  </section>
+
+  <!-- 11. Fluxo de trabalho -->
+  <section class="cena" id="cena-fluxo">
+    <div data-passo="0"><div class="eyebrow">Processo</div><h1>Como trabalhamos</h1></div>
+    <div class="cartao git" data-passo="1">
+      <svg class="diag" viewBox="0 0 1600 300" fill="none">
+        <line x1="60" y1="210" x2="1540" y2="210" stroke="#3b82f6" stroke-width="8" stroke-linecap="round"/>
+        <path d="M 420 210 C 520 210 520 90 620 90 L 1000 90 C 1100 90 1100 210 1200 210" stroke="#22d3ee" stroke-width="8" stroke-linecap="round"/>
+        <g fill="#0d1530" stroke-width="7">
+          <circle cx="160" cy="210" r="20" stroke="#3b82f6"/><circle cx="420" cy="210" r="20" stroke="#3b82f6"/>
+          <circle cx="700" cy="90" r="20" stroke="#22d3ee"/><circle cx="860" cy="90" r="20" stroke="#22d3ee"/>
+          <circle cx="1200" cy="210" r="26" stroke="#34d399"/><circle cx="1440" cy="210" r="20" stroke="#3b82f6"/>
+        </g>
+        <text x="60" y="280" fill="#9fb0d0" font-size="30" font-family="Inter" font-weight="700">main</text>
+        <text x="640" y="45" fill="#22d3ee" font-size="30" font-family="Inter" font-weight="700">branch da tarefa</text>
+        <text x="1120" y="280" fill="#34d399" font-size="30" font-family="Inter" font-weight="700">Pull Request revisado</text>
+      </svg>
+    </div>
+    <div class="grade2" style="margin-top: 28px;">
+      <div class="cartao" data-passo="2"><span class="icone i-ambar">{{icone:hard-drive}}</span><div>
+        <div class="titulo-cartao">Git LFS</div><div class="texto-cartao">Modelos 3D, texturas e vídeos pesados fora do histórico normal.</div></div></div>
+      <div class="cartao" data-passo="3"><span class="icone i-roxo">{{icone:bot}}</span><div>
+        <div class="titulo-cartao">IA como assistente</div><div class="texto-cartao">Ajuda na programação, com tudo revisado pela equipe antes de entrar.</div></div></div>
+    </div>
+  </section>
+
+  <!-- 12. Roadmap -->
+  <section class="cena" id="cena-roadmap">
+    <div data-passo="0"><div class="eyebrow">Status</div><h1>Onde estamos</h1></div>
+    <div class="roadmap">
+      <div class="cartao coluna" data-passo="1" style="color:var(--verde)"><span class="status st-ok">{{icone:circle-check}} Concluído</span>
+        <ul style="color:var(--texto)"><li>Estrutura do projeto e repositório</li><li>Scripts de interação: livros, painel e estandes</li><li>Configuração automática na Unity</li></ul></div>
+      <div class="cartao coluna" data-passo="2" style="color:var(--ambar)"><span class="status st-prox">{{icone:clock}} Próximos passos</span>
+        <ul style="color:var(--texto)"><li>Importar o modelo 3D do Sebraelab</li><li>Cadastrar os livros: resumos, capas e animações</li></ul></div>
+      <div class="cartao coluna" data-passo="3" style="color:var(--roxo)"><span class="status st-depois">{{icone:rocket}} Depois</span>
+        <ul style="color:var(--texto)"><li>Testes e otimização no Meta Quest</li><li>Minijogos de cada livro (pós-MVP)</li></ul></div>
+    </div>
+  </section>
+
+  <!-- 13. Encerramento -->
+  <section class="cena" id="cena-encerramento">
+    <div class="centro">
+      <div class="selo" data-passo="0">{{icone:glasses}}</div>
+      <div class="sub" data-passo="1" style="max-width:1400px;margin-top:0">Realidade virtual aproximando as pessoas dos livros e do ambiente de inovação do Sebrae.</div>
+      <div data-passo="2"><div class="grande" style="font-size:170px;margin-top:40px">Obrigado!</div></div>
+      <div class="chips" data-passo="2">
+        <span class="chip mono">github.com/FreireGabriel06/Tecnologia-Emergente</span>
+        <span class="chip">Equipe: <b>Eliabe · Emily Freire · Gabriel Freire · JG</b></span>
+      </div>
+    </div>
+  </section>
+
+  <div id="legenda"></div>
+  <div id="fade"></div>
+</div>
+
+<script>
+  const ORDEM = ["abertura","ideia","pilares","tecnologias","experiencia","visualizacao","painel","arquitetura","automacao","testepc","fluxo","roadmap","encerramento"];
+  const suave = p => 1 - Math.pow(1 - p, 3);
+  const DUR = 0.55, FADE = 0.35;
+
+  // Desenha a cena "id" no instante t (s), dado o tempo de cada fala.
+  window.desenhar = function (cena, t) {
+    document.querySelectorAll('.cena').forEach(s => s.classList.toggle('ativa', s.id === 'cena-' + cena.id));
+    document.getElementById('contador').textContent = String(ORDEM.indexOf(cena.id) + 1).padStart(2, '0') + ' / ' + ORDEM.length;
+
+    const inicioPasso = {};
+    cena.segmentos.forEach(s => { if (!(s.passo in inicioPasso)) inicioPasso[s.passo] = s.inicio; });
+    inicioPasso[0] = 0.12;
+
+    document.querySelectorAll('#cena-' + cena.id + ' [data-passo]').forEach(el => {
+      const n = +el.dataset.passo;
+      const ini = inicioPasso[n] ?? 0;
+      const p = suave(Math.min(1, Math.max(0, (t - ini) / DUR)));
+      el.style.opacity = p;
+      el.style.transform = `translateY(${(1 - p) * 26}px)`;
+    });
+
+    // destaque do item "Configurar livro" na automação
+    const livro = document.getElementById('item-livro'), config = document.getElementById('item-config');
+    if (cena.id === 'automacao' && inicioPasso[4] !== undefined) {
+      const sel = t >= inicioPasso[4];
+      livro.classList.toggle('sel', sel); config.classList.toggle('sel', !sel);
+    }
+
+    const leg = document.getElementById('legenda');
+    let atual = null;
+    cena.segmentos.forEach((s, i) => { if (t >= s.inicio) atual = s; });
+    if (atual && t < cena.duracao - FADE) { leg.textContent = atual.legenda; leg.style.display = 'block'; } else leg.style.display = 'none';
+
+    let f = 0;
+    if (t < FADE) f = 1 - t / FADE; else if (t > cena.duracao - FADE) f = (t - (cena.duracao - FADE)) / FADE;
+    document.getElementById('fade').style.opacity = Math.max(0, Math.min(1, f));
+  };
+  window.prontoSlides = true;
+</script>
+</body>
+</html>
