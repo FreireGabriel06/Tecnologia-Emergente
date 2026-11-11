@@ -1,0 +1,107 @@
+====================================================================
+GUIA DE DESENVOLVIMENTO: PROJETO VR SEBRAELAB (UNITY)
+====================================================================
+
+Este documento serve como um guia passo a passo para a implementação 
+do seu jogo VR no Unity, simulando o ambiente do Sebraelab.
+
+--------------------------------------------------------------------
+PARTE 1: USO SEGURO DO CLAUDE CODE (OU OUTRAS IAs)
+--------------------------------------------------------------------
+Como seu projeto está versionado no GitHub, você já tem uma camada de 
+segurança. Para garantir que a IA não altere seu projeto sem permissão:
+
+1. Instrução Clara: Sempre inicie sua sessão com o Claude Code dizendo: 
+   "Atue apenas como um assistente de leitura. Gere os scripts e 
+   explicações aqui no console, mas NÃO escreva, modifique ou delete 
+   nenhum arquivo do meu repositório."
+2. Ambiente Isolado (Opcional): Se quiser ter 100% de certeza, abra o 
+   Claude Code em uma pasta vazia (ex: "Testes_Scripts") no seu 
+   computador, em vez de abri-lo na raiz do projeto Unity.
+3. Controle de Versão: Antes de fechar o dia, use `git status`. Se a IA 
+   modificou algo acidentalmente, você pode desfazer com `git restore .`.
+
+--------------------------------------------------------------------
+PARTE 2: GUIA DE IMPLEMENTAÇÃO MANUAL NO UNITY
+--------------------------------------------------------------------
+
+PASSO 1: PREPARAÇÃO DO AMBIENTE VR NO UNITY
+1. Abra o Unity Hub e crie um projeto "3D (URP)" (recomendado para VR 
+   por questões de performance).
+2. Vá em `Window > Package Manager`.
+3. Mude para "Unity Registry" e instale o pacote `XR Interaction Toolkit` (XRI).
+4. Vá em `Edit > Project Settings > XR Plug-in Management` e instale. 
+   Marque "OpenXR" (ou o plugin específico do seu headset, como Oculus).
+
+PASSO 2: IMPORTAÇÃO E CONFIGURAÇÃO DO CENÁRIO (SEBRAELAB)
+1. Arraste o arquivo 3D da réplica do Sebraelab (normalmente em formato 
+   .fbx ou .obj) para a aba `Project` (pasta Assets/Models).
+2. Arraste o modelo da aba Project para a `Hierarchy` (Cena).
+3. Selecione o cenário na Hierarchy. No `Inspector`, clique em "Add Component" 
+   e adicione um `Mesh Collider`. Isso impede que o jogador atravesse as paredes.
+4. Ajuste os Materiais: Se o cenário vier sem cor, extraia os materiais 
+   no modelo original ou crie novos em `Assets > Materials` e arraste 
+   para as paredes e móveis.
+
+PASSO 3: CONFIGURAÇÃO DO JOGADOR (PLAYER VR) E MOVIMENTAÇÃO
+1. Na Hierarchy, delete a "Main Camera" padrão.
+2. Clique com o botão direito na Hierarchy, vá em `XR > XR Origin (VR)`.
+   Isso criará o seu "Player" com a câmera da cabeça e os controles das mãos.
+3. Para movimentação, selecione o "XR Origin".
+4. Adicione os componentes de locomoção:
+   - Adicione um `Locomotion System`.
+   - Adicione um `Continuous Move Provider (Action-based)` (para andar no analógico) 
+     ou `Teleportation Provider` (para teletransporte).
+5. Certifique-se de configurar o "Ground" (chão do Sebraelab) na layer 
+   certa para que o teletransporte funcione, caso use essa opção.
+
+PASSO 4: INTERAÇÃO COM OS OBJETOS (LIVROS)
+Para cada livro que o jogador pode pegar ou tocar:
+1. Adicione o modelo 3D do livro na cena.
+2. Adicione um `Box Collider` (ajuste o tamanho para caber no livro).
+3. Adicione um `Rigidbody`. Se o livro for ficar fixo na mesa até ser pego, 
+   marque a opção "Is Kinematic" ou desative a gravidade inicialmente.
+4. Adicione o componente `XR Grab Interactable`. Isso diz ao Unity que as 
+   mãos do XR Origin podem pegar este objeto.
+
+PASSO 5: MECÂNICAS DOS LIVROS (POPUPS E GIFS)
+1. Criação do Popup (UI):
+   - Clique com o direito no livro > `UI > Canvas`.
+   - Mude o "Render Mode" do Canvas para `World Space`.
+   - Ajuste o tamanho e a escala do Canvas para ficar pequeno 
+     (ex: Scale 0.001) e posicione-o logo acima do livro.
+   - Adicione um `Panel` e um `Text (TextMeshPro)` dentro do Canvas 
+     com o resumo do livro.
+   - Desative o Canvas (desmarque a caixinha no topo do Inspector) para 
+     que ele comece invisível.
+
+2. Script de Interação (LivroPopup.cs):
+   - Crie um script C# chamado "LivroPopup" e anexe ao livro.
+   - Lógica Básica: Você usará os eventos do `XR Grab Interactable`.
+   - No Inspector do `XR Grab Interactable`, procure por "Interactable Events".
+   - Em "Select Entered" (quando o jogador pega o livro) ou "Hover Entered" 
+     (quando ele aproxima a mão), clique no "+", arraste o Canvas para o 
+     espaço e selecione `GameObject.SetActive(true)`.
+   - Em "Select Exited", faça o inverso: `GameObject.SetActive(false)`.
+
+3. Implementação de GIFs:
+   - O Unity não suporta o formato `.gif` nativamente de forma simples.
+   - Solução ideal: Converta seu GIF para `.mp4`.
+   - Adicione um componente `Video Player` ao seu Canvas (em um RawImage).
+   - Coloque o vídeo para rodar em Loop quando o Canvas for ativado.
+
+PASSO 6: PREPARAÇÃO PARA FUTUROS MINIGAMES
+1. No seu script principal de interação de cada livro, crie uma função 
+   vazia chamada `public void IniciarMinigame()`.
+2. Por enquanto, deixe-a vazia. No futuro, você pode colocar um botão no 
+   Popup de UI (usando um componente de UI compatível com XR, como o 
+   `Tracked Device Graphic Raycaster`) que chamará essa função, carregando 
+   uma nova cena ou ativando um objeto na cena atual.
+
+--------------------------------------------------------------------
+RESUMO DE SCRIPTS NECESSÁRIOS (Para pedir à IA futuramente)
+--------------------------------------------------------------------
+Quando for usar a IA para gerar código, peça especificamente:
+- "Gere um script C# para Unity usando XR Interaction Toolkit que ativa um Canvas (popup) ao passar a mão sobre um objeto (Hover)."
+- "Gere um script que toca um VideoPlayer (simulando um GIF) quando um objeto é segurado."
+```eof
