@@ -15,9 +15,12 @@ for cena in linha["cenas"]:
         arq = linhas[i][len("file '"):-1]
         dur = float(linhas[i + 1].split()[1])
         pares.append((arq, dur))
-    assert abs(sum(p[1] for p in pares) * FPS - info["n"]) < 0.01, cena["id"]
+    n = int(round(cena["duracao"] * FPS))
+    falta = n / FPS - sum(p[1] for p in pares)
+    assert abs(falta) < 3.0 / FPS, (cena["id"], falta)
+    pares[-1] = (pares[-1][0], max(1.0 / FPS, pares[-1][1] + falta))
     entradas += pares
-    total_quadros += info["n"]
+    total_quadros += n
 
 lista = os.path.join(V, "lista_total.txt")
 with open(lista, "w", encoding="utf8") as f:

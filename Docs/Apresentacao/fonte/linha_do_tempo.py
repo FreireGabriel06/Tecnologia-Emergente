@@ -21,7 +21,7 @@ for cena in roteiro["cenas"]:
         t += len(a) / SR + PAUSA
     duracao = t - PAUSA + SAIDA
     bloco = np.concatenate(audio)
-    alvo = int(round(duracao * SR))
+    alvo = int(round(duracao * 30)) * (SR // 30)  # número inteiro de quadros (30 fps)
     bloco = np.pad(bloco, (0, max(0, alvo - len(bloco))))[:alvo]
     faixa.append(bloco)
     cenas.append({"id": cena["id"], "tresD": bool(cena.get("tresD")), "inicioGlobal": round(inicio_global, 4),

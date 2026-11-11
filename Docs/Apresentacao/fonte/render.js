@@ -18,8 +18,7 @@ function montar(arquivo) {
 }
 
 function quadrosDaCena(cena) {
-  const ini = Math.round(cena.inicioGlobal * FPS), fim = Math.round((cena.inicioGlobal + cena.duracao) * FPS);
-  const n = fim - ini, set = new Set([0]);
+  const ini = Math.round(cena.inicioGlobal * FPS), n = Math.round(cena.duracao * FPS), set = new Set([0]);
   if (cena.tresD) { for (let i = 0; i < n; i++) set.add(i); }
   else {
     const add = t => { const i = Math.round(t * FPS); if (i >= 0 && i < n) set.add(i); };
@@ -36,9 +35,9 @@ function quadrosDaCena(cena) {
   const navegador = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--allow-file-access-from-files'] });
   const pagina = await navegador.newPage({ viewport: { width: 1920, height: 1080 } });
   pagina.on('pageerror', e => console.error('erro na página:', e.message));
-  const urlSlides = montar('slides.html'), url3D = fs.existsSync(path.join(__dirname, 'cena3d.html')) ? montar('cena3d.html') : null;
+  const urlSlides = montar('slides.html'); montar('cena3d.html'); const url3D = 'http://127.0.0.1:8765/_cena3d.html';
   let carregada = null;
-  const abrir = async url => { if (carregada !== url) { await pagina.goto(url); await pagina.waitForFunction(() => window.prontoSlides === true || window.pronto3D === true, null, { timeout: 60000 }); await pagina.evaluate(() => document.fonts.ready); carregada = url; } };
+  const abrir = async url => { if (carregada !== url) { await pagina.goto(url); await pagina.waitForFunction(() => window.prontoSlides === true || window.pronto3D === true, null, { timeout: 120000 }); await pagina.evaluate(() => document.fonts.ready); carregada = url; } };
 
   const dirPrevia = path.join(V, 'previa'), dirQuadros = path.join(V, 'quadros');
   fs.mkdirSync(dirPrevia, { recursive: true }); fs.mkdirSync(dirQuadros, { recursive: true });
@@ -47,7 +46,7 @@ function quadrosDaCena(cena) {
     if (filtro.length && !filtro.includes(cena.id)) continue;
     await abrir(cena.tresD ? url3D : urlSlides);
     if (modo === 'previa') {
-      const ts = cena.tresD ? [cena.segmentos[0].inicio + 2, cena.segmentos[1].inicio + 1, cena.duracao - 0.6] : [cena.duracao - FADE - 0.2];
+      const ts = cena.tresD ? [0.4, cena.segmentos[0].inicio + 5, cena.segmentos[1].inicio + 1, cena.duracao - 0.6] : [cena.duracao - FADE - 0.2];
       for (const [j, t] of ts.entries()) {
         await pagina.evaluate(([c, t]) => window.desenhar(c, t), [cena, t]);
         await pagina.screenshot({ path: path.join(dirPrevia, `${String(linha.cenas.indexOf(cena) + 1).padStart(2, '0')}_${cena.id}_${j}.png`) });

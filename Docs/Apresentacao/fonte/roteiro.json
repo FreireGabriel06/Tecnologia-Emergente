@@ -133,8 +133,8 @@
       "segmentos": [
         {
           "passo": 1,
-          "fala": "Esta é uma visualização ilustrativa do estande de exemplo que o projeto monta automaticamente: uma mesa, três livros e a luz de destaque.",
-          "legenda": "Visualização ilustrativa do estande de exemplo que o projeto monta automaticamente: uma mesa, três livros e a luz de destaque."
+          "fala": "Esta é uma visualização ilustrativa feita com o modelo 3D do Sebraê Lab criado pela equipe: três livros de exemplo sobre uma das mesas, e a luz de destaque.",
+          "legenda": "Visualização ilustrativa com o modelo 3D do Sebraelab criado pela equipe: três livros de exemplo sobre uma das mesas e a luz de destaque."
         },
         {
           "passo": 2,
@@ -268,13 +268,13 @@
       "segmentos": [
         {
           "passo": 1,
-          "fala": "Até aqui, concluímos a estrutura do projeto, os scripts de interação e a configuração automática.",
-          "legenda": "Até aqui, concluímos a estrutura do projeto, os scripts de interação e a configuração automática."
+          "fala": "Até aqui, concluímos a estrutura do projeto, os scripts de interação, a configuração automática e a integração do modelo 3D do Sebraê Lab.",
+          "legenda": "Até aqui, concluímos a estrutura do projeto, os scripts de interação, a configuração automática e a integração do modelo 3D do Sebraelab."
         },
         {
           "passo": 2,
-          "fala": "Os próximos passos são importar o modelo 3D do Sebraê Lab e cadastrar os livros da exposição, com seus resumos e animações.",
-          "legenda": "Os próximos passos são importar o modelo 3D do Sebraelab e cadastrar os livros da exposição, com seus resumos e animações."
+          "fala": "Os próximos passos são cadastrar os livros da exposição, com seus resumos e animações, e ajustar o cenário e a iluminação na Yúniti.",
+          "legenda": "Os próximos passos são cadastrar os livros da exposição, com seus resumos e animações, e ajustar o cenário e a iluminação na Unity."
         },
         {
           "passo": 3,
