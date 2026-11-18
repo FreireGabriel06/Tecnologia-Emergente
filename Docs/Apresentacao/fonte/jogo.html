@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Sebraelab VR - Jogo</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #070b16; font-family: 'Inter', sans-serif; color: #eef3ff; }
+  #palco { position: relative; width: 1920px; height: 1080px; }
+  canvas { position: absolute; inset: 0; }
+  .hud { position: absolute; z-index: 5; }
+  #marca { top: 40px; left: 64px; display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 700; text-shadow: 0 2px 12px rgba(0,0,0,.7); }
+  #marca svg { width: 30px; height: 30px; color: #3ec5ff; }
+  #tag { top: 40px; right: 64px; font-size: 18px; font-weight: 600; color: #cfe0ff; background: rgba(6,10,22,.55); border: 1px solid rgba(255,255,255,.14);
+    padding: 8px 16px; border-radius: 999px; backdrop-filter: blur(6px); }
+  #capitulo { top: 92px; left: 64px; font-size: 18px; letter-spacing: .22em; text-transform: uppercase; font-weight: 800; color: #3ec5ff; text-shadow: 0 2px 10px rgba(0,0,0,.8); }
+  #topo { position: absolute; left: 0; right: 0; top: 0; height: 220px; z-index: 3; background: linear-gradient(rgba(4,7,16,.75), rgba(4,7,16,0)); }
+  #base { position: absolute; left: 0; right: 0; bottom: 0; height: 260px; z-index: 3; background: linear-gradient(rgba(4,7,16,0), rgba(4,7,16,.65)); }
+
+  #veu { position: absolute; inset: 0; z-index: 5; opacity: 0; background: radial-gradient(ellipse 60% 45% at 50% 45%, rgba(5,9,20,.82), rgba(5,9,20,.35) 70%, rgba(5,9,20,.15)); }
+  #titulo { position: absolute; left: 0; right: 0; top: 330px; z-index: 6; text-align: center; opacity: 0; }
+  #titulo .t { font-size: 150px; font-weight: 800; letter-spacing: -0.045em; line-height: 1;
+    background: linear-gradient(100deg, #ffffff 30%, #9fdcff 65%, #3ec5ff); -webkit-background-clip: text; color: transparent; filter: drop-shadow(0 8px 30px rgba(0,0,0,.6)); }
+  #titulo .s { font-size: 40px; font-weight: 500; margin-top: 18px; color: #e3ecff; text-shadow: 0 4px 20px rgba(0,0,0,.8); }
+  #titulo .e { display: inline-flex; gap: 14px; margin-top: 34px; font-size: 24px; }
+  #titulo .chip { padding: 10px 20px; border-radius: 999px; background: rgba(6,10,22,.6); border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(6px); }
+  #titulo .chip b { color: #3ec5ff; }
+
+  .rotulo { position: absolute; z-index: 4; transform: translate(-50%, -100%); white-space: nowrap; opacity: 0; }
+  .rotulo .caixa { font-size: 22px; font-weight: 700; padding: 8px 16px; border-radius: 12px; background: rgba(6,10,22,.78); border: 1px solid rgba(62,197,255,.55); color: #fff; }
+  .rotulo .haste { width: 2px; height: 46px; margin: 0 auto; background: linear-gradient(#3ec5ff, rgba(62,197,255,0)); }
+  .rotulo .ponto { width: 12px; height: 12px; border-radius: 50%; background: #3ec5ff; margin: -2px auto 0; box-shadow: 0 0 14px #3ec5ff; }
+
+  #mira { position: absolute; left: 954px; top: 534px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; z-index: 5; opacity: 0; box-shadow: 0 0 8px rgba(0,0,0,.6); }
+  #teclas { position: absolute; left: 64px; bottom: 170px; z-index: 5; display: flex; gap: 26px; align-items: flex-end; opacity: 0; }
+  .grade { display: grid; grid-template-columns: repeat(3, 62px); grid-template-rows: 62px 62px; gap: 8px; }
+  .k { border-radius: 12px; background: rgba(20,28,48,.85); border: 1px solid rgba(255,255,255,.22); display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 26px; box-shadow: 0 5px 0 rgba(0,0,0,.45); transition: none; }
+  .k.on { background: #1e6bff; border-color: #8fc3ff; }
+  .k.w { grid-column: 2; grid-row: 1; } .k.a { grid-column: 1; grid-row: 2; } .k.s { grid-column: 2; grid-row: 2; } .k.d { grid-column: 3; grid-row: 2; }
+  .k.e { width: 92px; height: 92px; font-size: 40px; }
+  .legk { font-size: 18px; color: #cfe0ff; text-align: center; margin-top: 8px; font-weight: 600; }
+  #modo { position: absolute; right: 64px; bottom: 180px; z-index: 5; opacity: 0; font-size: 20px; font-weight: 700; padding: 10px 18px; border-radius: 12px;
+    background: rgba(6,10,22,.7); border: 1px solid rgba(255,255,255,.18); }
+
+  #legenda { position: absolute; left: 50%; bottom: 46px; transform: translateX(-50%); max-width: 1700px; width: max-content; z-index: 10;
+    background: rgba(4,7,16,.72); border: 1px solid rgba(255,255,255,.10); border-radius: 16px; padding: 14px 28px;
+    font-size: 30px; line-height: 1.35; font-weight: 500; text-align: center; color: #fff; display: none; }
+  #fade { position: absolute; inset: 0; background: #070b16; z-index: 20; opacity: 0; }
+  body.deck #legenda, body.deck #fade { display: none !important; }
+  body.limpo .hud, body.limpo #topo, body.limpo #base, body.limpo #legenda, body.limpo #capitulo { display: none !important; }
+  #flash { position: absolute; inset: 0; background: #000; z-index: 8; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="palco">
+  <div id="topo"></div><div id="base"></div>
+  <div class="hud" id="marca">{{icone:glasses}} Sebraelab VR</div>
+  <div class="hud" id="tag">Simulação do jogo · modelo 3D e lógica do projeto</div>
+  <div class="hud" id="capitulo"></div>
+  <div id="veu"></div>
+  <div id="titulo">
+    <div class="t">Sebraelab VR</div>
+    <div class="s">Exposição Interativa de Livros em Realidade Virtual</div>
+    <div class="e"><span class="chip">Disciplina: <b>Tecnologias Emergentes</b></span><span class="chip">Equipe: <b>Eliabe · Emily Freire · Gabriel Freire · JG</b></span></div>
+  </div>
+  <div id="rotulos"></div>
+  <div id="mira"></div>
+  <div id="teclas">
+    <div><div class="grade"><div class="k w" id="kw">W</div><div class="k a" id="ka">A</div><div class="k s" id="ks">S</div><div class="k d" id="kd">D</div></div><div class="legk">andar</div></div>
+    <div><div class="k e" id="ke">E</div><div class="legk">abrir painel</div></div>
+  </div>
+  <div id="modo">Modo PC · teclado e mouse</div>
+  <div id="flash"></div>
+  <div id="legenda"></div>
+  <div id="fade"></div>
+</div>
+
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { desenharAzulejo } from './azulejo.js';
+import { desenharClipe } from './clipe.js';
+const azulejo = desenharAzulejo(document.createElement('canvas'), 256, 4);
+
+const L = 1920, A = 1080;
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(L, A); renderer.setPixelRatio(1);
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.12;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.getElementById('palco').prepend(renderer.domElement);
+
+const cena = new THREE.Scene();
+cena.background = new THREE.Color(0x0b1222);
+const camera = new THREE.PerspectiveCamera(62, L / A, 0.03, 200);
+cena.add(camera);
+const hemi = new THREE.HemisphereLight(0xf4f7ff, 0x5c5850, 1.85); cena.add(hemi);
+const sol = new THREE.DirectionalLight(0xfff6e8, 1.05); sol.position.set(4, 10, 6); cena.add(sol);
+
+const v3 = (x, y, z) => new THREE.Vector3(x, y, z);
+const lerp = THREE.MathUtils.lerp, clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const suave = p => p * p * (3 - 2 * p);
+const prog = (t, a, b) => b <= a ? (t >= b ? 1 : 0) : suave(clamp((t - a) / (b - a), 0, 1));
+const caminho = (pts, p) => { // spline Catmull-Rom por pontos de controle
+  const c = new THREE.CatmullRomCurve3(pts, false, 'centripetal'); return c.getPoint(clamp(p, 0, 1));
+};
+
+// ---------------- cenário ----------------
+let modelo, sala, mesaBox, centroMesa, dirJogador, lateral, topoMesa = 0.55, objetos = {};
+const livros = []; let livroAlvo, posLivro0, rotLivro0;
+const contorno = new THREE.Mesh(new THREE.BoxGeometry(0.178, 0.046, 0.248),
+  new THREE.MeshBasicMaterial({ color: 0x3ec5ff, transparent: true, opacity: 0, side: THREE.BackSide }));
+const spot = new THREE.SpotLight(0xfff0d2, 0, 5, THREE.MathUtils.degToRad(30), 0.5, 1.6);
+spot.castShadow = true; spot.shadow.mapSize.set(1024, 1024); spot.shadow.bias = -0.0005;
+const cone = new THREE.Mesh(new THREE.ConeGeometry(0.75, 1.85, 48, 1, true),
+  new THREE.MeshBasicMaterial({ color: 0xfff0d2, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }));
+const luminaria = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 0.1, 32), new THREE.MeshStandardMaterial({ color: 0x222831, emissive: 0x000000 }));
+const bordas = new THREE.Group(); // "colliders" (cena do cenário)
+let pisoTeleporte;
+
+// ---------------- painel (Canvas em World Space, como o que o SebraelabMenu cria na Unity) ----------------
+// Unity: 450 x ~600 unidades (1 unidade = 1 mm), margem 24, espaço 12: faixa de azulejos 34, título 34 negrito,
+// autor 22 itálico, resumo 22, vídeo 16:9. Aqui: 2 px por unidade.
+const LIVROS = [
+  { titulo: 'O Mulato', autor: 'Aluísio Azevedo (1881)', cor: 0x1f3d87,
+    resumo: 'Um dos marcos do Naturalismo no Brasil. Raimundo volta a São Luís depois de estudar na Europa e descobre que é filho de uma mulher escravizada. O romance expõe o preconceito racial e a hipocrisia da sociedade maranhense do século XIX.' },
+  { titulo: 'Os Tambores de São Luís', autor: 'Josué Montello (1975)', cor: 0xb32129,
+    resumo: 'Ao atravessar as ruas de São Luís numa noite, o velho Damião relembra a própria vida, da escravidão à liberdade. O romance retrata a luta do povo negro no Maranhão, ao som dos tambores.' },
+  { titulo: 'Poema Sujo', autor: 'Ferreira Gullar (1976)', cor: 0xdb9e1f,
+    resumo: 'Poema longo escrito em 1975, no exílio em Buenos Aires. Ferreira Gullar revisita a infância em São Luís (as ruas, a família, os cheiros e os sons da cidade) num dos grandes poemas da língua portuguesa.' },
+];
+const PX = 2, LARG = 450, MARG = 24, ESP = 12, FONTE = "'Liberation Sans', Arial, sans-serif";
+const pc = document.createElement('canvas'); pc.width = LARG * PX; pc.height = 640 * PX;
+const g = pc.getContext('2d');
+const texPainel = new THREE.CanvasTexture(pc); texPainel.colorSpace = THREE.SRGBColorSpace; texPainel.anisotropy = 8;
+const painel = new THREE.Mesh(new THREE.PlaneGeometry(0.45, 0.64), new THREE.MeshBasicMaterial({ map: texPainel, transparent: true, opacity: 0, depthWrite: false, toneMapped: false }));
+painel.renderOrder = 10;
+const clipe = document.createElement('canvas'); clipe.width = 640; clipe.height = 360; const gClipe = clipe.getContext('2d');
+function rr(x, y, w, h, r) { g.beginPath(); g.roundRect(x, y, w, h, r); }
+function quebrar(texto, largura) {
+  const linhas = []; let atual = '';
+  for (const p of texto.split(' ')) { const teste = atual ? atual + ' ' + p : p; if (g.measureText(teste).width > largura && atual) { linhas.push(atual); atual = p; } else atual = teste; }
+  if (atual) linhas.push(atual); return linhas;
+}
+let alturaPainel = 600;
+function desenharPainel(t, livro) {
+  g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, pc.width, pc.height); g.scale(PX, PX);
+  const larguraUtil = LARG - 2 * MARG;
+  g.font = `22px ${FONTE}`; const linhas = quebrar(livro.resumo, larguraUtil);
+  const hVideo = larguraUtil * 9 / 16;
+  alturaPainel = MARG + 34 + ESP + 40 + ESP + 26 + ESP + linhas.length * 27 + ESP + hVideo + MARG;
+  const y0 = 640 - alturaPainel; // o painel cresce para cima a partir da base (pivot embaixo)
+  rr(0, y0, LARG, alturaPainel, 10); g.fillStyle = 'rgba(18,23,33,0.97)'; g.fill();
+  let y = y0 + MARG;
+  g.save(); g.beginPath(); g.rect(MARG, y, larguraUtil, 34); g.clip();
+  for (let x = 0; x < larguraUtil; x += 34) g.drawImage(azulejo, MARG + x, y, 34, 34);
+  g.restore(); y += 34 + ESP;
+  g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'top';
+  g.font = `bold 34px ${FONTE}`; g.fillText(livro.titulo, LARG / 2, y + 2); y += 40 + ESP;
+  g.fillStyle = 'rgb(191,204,230)'; g.font = `italic 22px ${FONTE}`; g.fillText(livro.autor, LARG / 2, y + 2); y += 26 + ESP;
+  g.fillStyle = 'rgb(235,235,235)'; g.textAlign = 'left'; g.font = `22px ${FONTE}`;
+  linhas.forEach((l, i) => g.fillText(l, MARG, y + i * 27)); y += linhas.length * 27 + ESP;
+  desenharClipe(gClipe, 640, 360, t, azulejo); g.drawImage(clipe, MARG, y, larguraUtil, hVideo);
+  texPainel.needsUpdate = true;
+}
+
+// ---------------- controles VR (estilo Quest) ----------------
+function criarControle(lado) {
+  const grupo = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({ color: 0x2b2f36, roughness: 0.45, metalness: 0.1 });
+  const corpo = new THREE.Mesh(new THREE.CapsuleGeometry(0.022, 0.085, 8, 16), mat); corpo.rotation.x = -0.55; corpo.position.set(0, -0.03, 0.02);
+  const anel = new THREE.Mesh(new THREE.TorusGeometry(0.048, 0.008, 12, 40), mat); anel.rotation.set(-0.35, 0, 0); anel.position.set(lado * 0.012, 0.035, -0.035);
+  const topo = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.026, 0.018, 24), mat); topo.position.set(0, 0.022, -0.012); topo.rotation.x = 0.35;
+  const botao = new THREE.Mesh(new THREE.CylinderGeometry(0.007, 0.007, 0.006, 16), new THREE.MeshStandardMaterial({ color: 0x9aa3b2 })); botao.position.set(lado * -0.006, 0.033, -0.01); botao.rotation.x = 0.35;
+  const luz = new THREE.Mesh(new THREE.SphereGeometry(0.006, 12, 8), new THREE.MeshStandardMaterial({ color: 0x3ec5ff, emissive: 0x3ec5ff, emissiveIntensity: 2 }));
+  luz.position.set(0, 0.03, -0.075);
+  grupo.add(corpo, anel, topo, botao, luz);
+  return grupo;
+}
+const controleE = criarControle(-1), controleD = criarControle(1);
+const raio = new THREE.Mesh(new THREE.CylinderGeometry(0.002, 0.002, 1, 8), new THREE.MeshBasicMaterial({ color: 0x3ec5ff, transparent: true, opacity: 0 }));
+let arco, retic;
+
+// ---------------- carregamento ----------------
+new FBXLoader().load('./sebraelab3d/Sebrae Lab.fbx', m => {
+  modelo = m;
+  modelo.children.forEach(f => { if (f.name.startsWith('SM_') || f.name.startsWith('chrome')) f.visible = false; });
+  modelo.traverse(o => {
+    if (o.isCamera || o.isLight) o.visible = false;
+    if (o.isMesh) { o.receiveShadow = true; [].concat(o.material).forEach(mt => { mt.side = THREE.DoubleSide; }); }
+  });
+  modelo.scale.setScalar(0.01); cena.add(modelo); modelo.updateMatrixWorld(true);
+  sala = new THREE.Box3(); modelo.children.forEach(f => { if (f.visible) sala.expandByObject(f); });
+  for (const nome of ['Mesa_Grande', 'Arquibancada', 'Area_de_Trabalho_1', 'Bancada_Cozinha', 'Sofa', 'Mesa_Recepção', 'Geladeira', 'TV'])
+    { const o = modelo.getObjectByName(nome); if (o) objetos[nome] = new THREE.Box3().setFromObject(o); }
+  mesaBox = objetos['Mesa_Grande']; topoMesa = mesaBox.max.y;
+  centroMesa = mesaBox.getCenter(new THREE.Vector3()); centroMesa.y = 0;
+  const cs = sala.getCenter(new THREE.Vector3());
+  dirJogador = v3(cs.x - centroMesa.x, 0, cs.z - centroMesa.z).normalize();
+  lateral = new THREE.Vector3().crossVectors(v3(0, 1, 0), dirJogador).normalize();
+  const yaw = Math.atan2(dirJogador.x, dirJogador.z);
+
+  for (let i = 0; i < 3; i++) {
+    const livro = new THREE.Group();
+    livro.position.copy(centroMesa).addScaledVector(lateral, (i - 1) * 0.22); livro.position.y = topoMesa + 0.016;
+    livro.rotation.y = yaw + THREE.MathUtils.degToRad((i - 1) * -12);
+    const capa = new THREE.Mesh(new RoundedBoxGeometry(0.16, 0.032, 0.23, 2, 0.006), new THREE.MeshStandardMaterial({ color: LIVROS[i].cor, roughness: 0.5 }));
+    capa.castShadow = true; livro.add(capa);
+    const paginas = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.024, 0.222), new THREE.MeshStandardMaterial({ color: 0xf1ead8, roughness: 0.9 }));
+    paginas.position.x = 0.007; livro.add(paginas);
+    cena.add(livro); livros.push(livro);
+  }
+  livroAlvo = livros[1]; livroAlvo.add(contorno);
+  posLivro0 = livroAlvo.position.clone(); rotLivro0 = livroAlvo.rotation.clone();
+
+  spot.position.set(centroMesa.x, 2.5, centroMesa.z).addScaledVector(dirJogador, 0.25);
+  spot.target.position.set(centroMesa.x, topoMesa, centroMesa.z); cena.add(spot, spot.target);
+  cone.position.copy(spot.position).add(v3(0, -0.92, 0)); cena.add(cone);
+  luminaria.position.copy(spot.position); cena.add(luminaria);
+  cena.add(painel);
+  criarPainelAzulejos();
+
+  // bordas das peças (visualização dos colliders)
+  modelo.traverse(o => {
+    if (!o.isMesh || !o.visible) return;
+    let vis = true; for (let p = o; p; p = p.parent) if (!p.visible) vis = false;
+    if (!vis) return;
+    const e = new THREE.LineSegments(new THREE.EdgesGeometry(o.geometry, 30), new THREE.LineBasicMaterial({ color: 0x3ec5ff, transparent: true, opacity: 0 }));
+    e.matrixAutoUpdate = false; e.matrix.copy(o.matrixWorld); bordas.add(e);
+  });
+  cena.add(bordas);
+  // piso de teletransporte (grade)
+  const gc = document.createElement('canvas'); gc.width = gc.height = 256; const gg = gc.getContext('2d');
+  gg.fillStyle = 'rgba(62,197,255,0.28)'; gg.fillRect(0, 0, 256, 256); gg.strokeStyle = 'rgba(120,220,255,1)'; gg.lineWidth = 6; gg.strokeRect(0, 0, 256, 256);
+  const tg = new THREE.CanvasTexture(gc); tg.wrapS = tg.wrapT = THREE.RepeatWrapping; tg.repeat.set(20, 56);
+  pisoTeleporte = new THREE.Mesh(new THREE.PlaneGeometry(10, 28), new THREE.MeshBasicMaterial({ map: tg, transparent: true, opacity: 0, depthWrite: false, color: 0x3ec5ff }));
+  pisoTeleporte.rotation.x = -Math.PI / 2; pisoTeleporte.position.set(-12.0, 0.012, -0.6); cena.add(pisoTeleporte);
+
+  // controles presos à câmera
+  camera.add(controleE, controleD); controleD.add(raio);
+  retic = new THREE.Group();
+  const anelR = new THREE.Mesh(new THREE.RingGeometry(0.18, 0.24, 48), new THREE.MeshBasicMaterial({ color: 0x3ec5ff, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false }));
+  anelR.rotation.x = -Math.PI / 2; retic.add(anelR); retic.position.y = 0.02; cena.add(retic);
+  arco = new THREE.Mesh(new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(v3(0,0,0), v3(0,1,0), v3(0,0,1)), 40, 0.006, 8, false),
+    new THREE.MeshBasicMaterial({ color: 0x3ec5ff, transparent: true, opacity: 0, depthWrite: false })); cena.add(arco);
+
+  THREE.DefaultLoadingManager.onLoad = () => setTimeout(() => { window.pronto = true; }, 300);
+  setTimeout(() => { window.pronto = true; }, 15000);
+});
+
+function criarPainelAzulejos() {
+  const LADO = 0.15, LINHAS = 5, alturaAz = LINHAS * LADO, base = Math.max(0.8, topoMesa + 0.25);
+  const origem = v3(centroMesa.x, base + alturaAz / 2, centroMesa.z), atras = dirJogador.clone().negate();
+  const malhas = []; modelo.traverse(o => { if (!o.isMesh) return; for (let p = o; p; p = p.parent) if (!p.visible) return; malhas.push(o); });
+  const rc = new THREE.Raycaster(); rc.far = 1.6;
+  const raio = o => { rc.set(o, atras); const h = rc.intersectObjects(malhas, false)[0]; if (!h) return null;
+    const n = h.face.normal.clone().transformDirection(h.object.matrixWorld); if (n.dot(dirJogador) < 0) n.negate(); return { d: h.distance, n, p: h.point }; };
+  // mesma regra do SebraelabCulturaSaoLuis.ProcurarParede: aceita parede com ripas (até 12 cm), encosta na parte mais saliente
+  const c = raio(origem); let colunas = 0, n = null, frente = 0;
+  if (c) { n = c.n.clone().setY(0).normalize(); }
+  if (c && n.dot(dirJogador) > 0.85) {
+    const lat = new THREE.Vector3().crossVectors(v3(0, 1, 0), n), plano = c.p.dot(n);
+    const raioN = o => { rc.set(o, n.clone().negate()); const h = rc.intersectObjects(malhas, false)[0]; if (!h) return null;
+      const nn = h.face.normal.clone().transformDirection(h.object.matrixWorld); if (nn.dot(n) < 0) nn.negate(); return { n: nn, p: h.point }; };
+    for (const k of [10, 8, 6]) {
+      const meia = k * LADO / 2 + 0.04; let ok = true; frente = plano;
+      for (const lado of [-meia, meia]) for (const a of [-alturaAz / 2, alturaAz / 2 + 0.21]) {
+        const r = raioN(c.p.clone().addScaledVector(n, 0.5).addScaledVector(lat, lado).add(v3(0, a, 0)));
+        const desvio = r ? r.p.dot(n) - plano : 99;
+        if (!r || r.n.dot(n) < 0.95 || desvio > 0.04 || desvio < -0.12) ok = false; else frente = Math.max(frente, plano + desvio);
+      }
+      if (ok) { colunas = k; break; }
+    }
+  }
+  console.warn('painel de azulejos:', colunas ? colunas + ' colunas na parede' : 'totem');
+  const largura = (colunas || 10) * LADO, grupo = new THREE.Group();
+  const normal = colunas ? n : dirJogador;
+  grupo.position.copy(colunas ? c.p.clone().addScaledVector(n, frente - c.p.dot(n) + 0.002)
+                              : origem.clone().addScaledVector(atras, c ? Math.min(0.75, Math.max(0.45, c.d - 0.1)) : 0.75));
+  grupo.lookAt(grupo.position.clone().add(normal)); // +Z do grupo virado para o jogador
+  const borda = 0.04, hPlaca = 0.18, folga = 0.03, esp = 0.025, topo = alturaAz / 2 + folga + hPlaca + borda, fundo = -alturaAz / 2 - borda;
+  const madeira = new THREE.Mesh(new THREE.BoxGeometry(largura + 2 * borda, topo - fundo, esp), new THREE.MeshStandardMaterial({ color: 0x3d2617, roughness: 0.7 }));
+  madeira.position.set(0, (topo + fundo) / 2, esp / 2); grupo.add(madeira);
+  const tex = new THREE.CanvasTexture(azulejo); tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(largura / LADO, LINHAS); tex.anisotropy = 8;
+  const tiles = new THREE.Mesh(new THREE.PlaneGeometry(largura, alturaAz), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.25, metalness: 0 }));
+  tiles.position.z = esp + 0.002; grupo.add(tiles);
+  const pcv = document.createElement('canvas'); pcv.width = Math.round(largura * 1000); pcv.height = 180; const gp = pcv.getContext('2d');
+  gp.fillStyle = '#f3efe4'; gp.fillRect(0, 0, pcv.width, 180); gp.textAlign = 'center'; gp.textBaseline = 'middle';
+  gp.fillStyle = '#1f3c88'; gp.font = "bold 74px 'Liberation Sans', Arial"; gp.fillText('Estante maranhense', pcv.width / 2, 62);
+  gp.fillStyle = '#404c6b'; gp.font = "38px 'Liberation Sans', Arial"; gp.fillText('Autores nascidos em São Luís do Maranhão', pcv.width / 2, 138);
+  const tp = new THREE.CanvasTexture(pcv); tp.colorSpace = THREE.SRGBColorSpace; tp.anisotropy = 8;
+  const placa = new THREE.Mesh(new THREE.PlaneGeometry(largura, hPlaca), new THREE.MeshBasicMaterial({ map: tp, toneMapped: false }));
+  placa.position.set(0, alturaAz / 2 + folga + hPlaca / 2, esp + 0.002); grupo.add(placa);
+  cena.add(grupo);
+}
+
+// pontos relativos à mesa: dist = para o lado do jogador, lado = lateral
+const ponto = (dist, lado, y) => centroMesa.clone().addScaledVector(dirJogador, dist).addScaledVector(lateral, lado).setY(y);
+
+// ---------------- HUD ----------------
+const el = id => document.getElementById(id);
+const rotulosDiv = el('rotulos');
+const rotulos = {};
+function rotulo(id, texto) {
+  if (!rotulos[id]) { const d = document.createElement('div'); d.className = 'rotulo'; d.innerHTML = `<div class="caixa">${texto}</div><div class="haste"></div><div class="ponto"></div>`; rotulosDiv.appendChild(d); rotulos[id] = d; }
+  return rotulos[id];
+}
+function posicionarRotulo(d, pos, opac) {
+  const p = pos.clone().project(camera);
+  const vis = p.z < 1 && p.x > -1.1 && p.x < 1.1;
+  d.style.left = ((p.x * 0.5 + 0.5) * L) + 'px'; d.style.top = ((-p.y * 0.5 + 0.5) * A) + 'px'; d.style.opacity = vis ? opac : 0;
+}
+function legendaFade(dados, t) {
+  const s = dados.segmentos, D = dados.duracao;
+  let atual = null; s.forEach(seg => { if (t >= seg.inicio) atual = seg; });
+  const leg = el('legenda');
+  if (atual && t < D - 0.3) { leg.textContent = atual.legenda; leg.style.display = 'block'; } else leg.style.display = 'none';
+  let f = 0; if (t < 0.35) f = 1 - t / 0.35; else if (t > D - 0.35) f = (t - (D - 0.35)) / 0.35;
+  el('fade').style.opacity = clamp(f, 0, 1);
+}
+function resetHUD() {
+  ['titulo', 'veu', 'mira', 'teclas', 'modo', 'flash'].forEach(i => el(i).style.opacity = 0);
+  Object.values(rotulos).forEach(d => d.style.opacity = 0);
+  ['kw', 'ka', 'ks', 'kd', 'ke'].forEach(i => el(i).classList.remove('on'));
+  controleE.visible = controleD.visible = false; raio.material.opacity = 0; arco.material.opacity = 0; retic.children[0].material.opacity = 0;
+  bordas.children.forEach(b => b.material.opacity = 0); pisoTeleporte.material.opacity = 0;
+  hemi.intensity = 1.85; sol.intensity = 1.05;
+  spot.intensity = 0; cone.material.opacity = 0; luminaria.material.emissive.setRGB(0, 0, 0); contorno.material.opacity = 0;
+  painel.material.opacity = 0; livroAlvo.position.copy(posLivro0); livroAlvo.rotation.copy(rotLivro0);
+  el('tag').style.display = 'block';
+}
+function luzDestaque(nivel) {
+  spot.intensity = 8 * nivel; cone.material.opacity = 0.05 * nivel; luminaria.material.emissive.setRGB(nivel, nivel * 0.92, nivel * 0.75);
+}
+function mostrarPainel(t, opac, alvoPos, livro = LIVROS[1]) {
+  desenharPainel(t, livro);
+  painel.material.opacity = opac;
+  painel.position.copy(alvoPos).add(v3(0, 0.016 + 0.05 + 0.32, 0)); // base do Canvas 5 cm acima do livro
+  const dir = v3(camera.position.x - painel.position.x, 0, camera.position.z - painel.position.z);
+  painel.rotation.set(0, Math.atan2(dir.x, dir.z), 0); // sempre em pé e virado para o jogador
+  painel.scale.setScalar(0.85 + 0.15 * opac);
+}
+function olharDe(pos, alvo) { camera.position.copy(pos); camera.lookAt(alvo); }
+
+// ---------------- modos ----------------
+const MODOS = {
+  abertura(d, t) {
+    el('capitulo').textContent = '';
+    el('tag').style.display = 'none';
+    const p = t / d.duracao;
+    olharDe(caminho([v3(-7.9, 2.15, 12.5), v3(-8.9, 2.0, 8.0), v3(-10.4, 1.85, 4.2), v3(-11.6, 1.75, 2.2)], p),
+            caminho([v3(-14.5, 0.8, 6.0), v3(-15.5, 0.8, 3.0), v3(-16.2, 0.9, 1.0), v3(-16.4, 1.0, 0.25)], p));
+    const tt = d.segmentos[2].inicio;
+    el('titulo').style.opacity = prog(t, tt - 0.2, tt + 0.8);
+    el('veu').style.opacity = 0.85 * prog(t, tt - 0.4, tt + 0.8);
+    luzDestaque(prog(t, 1.0, 3.0));
+  },
+  cenario(d, t) {
+    el('capitulo').textContent = 'O cenário';
+    const p = t / d.duracao;
+    olharDe(caminho([v3(-7.9, 2.1, 13.0), v3(-8.2, 2.1, 8.0), v3(-8.5, 2.05, 3.8), v3(-8.6, 2.0, 2.2)], p),
+            caminho([v3(-15.5, 0.6, 9.5), v3(-15.5, 0.6, 5.0), v3(-15.0, 0.5, 1.5), v3(-14.0, 0.4, 0.5)], p));
+    const s1 = d.segmentos[0].inicio, s2 = d.segmentos[1].inicio;
+    const itens = [['rec', 'Recepção', 'Mesa_Recepção', 0.0], ['arq', 'Arquibancada', 'Arquibancada', 0.15], ['est', 'Estações de trabalho', 'Area_de_Trabalho_1', 0.32],
+                   ['sof', 'Convivência', 'Sofa', 0.48], ['mes', 'Mesas dos livros', 'Mesa_Grande', 0.6], ['coz', 'Cozinha', 'Bancada_Cozinha', 0.72]];
+    for (const [id, texto, nome, atraso] of itens) {
+      const b = objetos[nome]; if (!b) continue;
+      const c = b.getCenter(new THREE.Vector3()); c.y = b.max.y + 0.05;
+      const tIni = s1 + (s2 - s1) * atraso * 0.9;
+      posicionarRotulo(rotulo(id, texto), c, prog(t, tIni, tIni + 0.5) * (1 - prog(t, s2 + 0.2, s2 + 0.8)));
+    }
+    const pc2 = prog(t, s2 + 0.3, s2 + 1.4);
+    hemi.intensity = 1.85 * (1 - 0.65 * pc2); sol.intensity = 1.05 * (1 - 0.65 * pc2); // escurece para as colisões aparecerem
+    bordas.children.forEach(b => b.material.opacity = 0.95 * pc2);
+    pisoTeleporte.material.opacity = 0.55 * prog(t, s2 + 2.0, s2 + 3.0);
+    const etapa = prog(t, s2 + 0.3, s2 + 1.0) * (1 - prog(t, s2 + 2.0, s2 + 2.5)), etapa2 = prog(t, s2 + 2.2, s2 + 2.9);
+    posicionarRotulo(rotulo('col', 'Mesh Collider em cada peça'), v3(-12.0, 2.1, 0.5), etapa);
+    posicionarRotulo(rotulo('tel', 'Chão de teleporte (Teleportation Area)'), v3(-12.6, 0.15, 2.4), etapa2);
+  },
+  vr(d, t) {
+    el('capitulo').textContent = 'Jogabilidade em VR';
+    controleE.visible = controleD.visible = true;
+    const s = d.segmentos.map(x => x.inicio), D = d.duracao;
+    // posição do jogador: entrada -> anda -> teleporta perto da mesa
+    const pIni = ponto(5.6, -2.3, 1.6), pAnda = ponto(4.6, -1.7, 1.6), pPerto = ponto(1.05, 0.1, 1.6);
+    const tTele = s[1] + (s[2] - s[1]) * 0.78; // momento do teletransporte
+    let pos, alvo;
+    if (t < tTele) {
+      const pw = prog(t, s[1], s[1] + 2.2);
+      pos = pIni.clone().lerp(pAnda, pw);
+      const giro = Math.sin(prog(t, 0.2, s[1]) * Math.PI) * 0.9; // olha em volta no começo
+      alvo = ponto(0, 0, 0.8).add(lateral.clone().multiplyScalar(giro * 2.2));
+      alvo.lerp(ponto(0.6, 0, 0.3), prog(t, s[1] + 2.0, s[1] + 3.0)); // olha para o chão onde vai teleportar
+    } else {
+      pos = pPerto.clone();
+      // ao pegar o livro, a cabeça sobe junto para ver o livro e o painel inteiros
+      alvo = ponto(0, 0, topoMesa + 0.18).lerp(ponto(0.45, 0.1, 1.5), prog(t, s[4] + 0.2, s[4] + 1.5) * (1 - prog(t, s[5] + 0.2, s[5] + 1.1)));
+    }
+    pos.y += Math.sin(t * 2.1) * 0.006; // leve movimento da cabeça
+    olharDe(pos, alvo);
+    // controles na frente da câmera
+    controleE.position.set(-0.2, -0.24, -0.42); controleE.rotation.set(0.25, 0.15, 0.1);
+    controleD.position.set(0.2, -0.24, -0.42); controleD.rotation.set(0.25, -0.15, -0.1);
+    // teletransporte: raio em arco do controle direito até o chão
+    const pa = prog(t, s[1] + 2.4, s[1] + 2.9) * (1 - prog(t, tTele - 0.05, tTele));
+    const destino = ponto(1.05, 0.1, 0.02);
+    if (pa > 0) {
+      const ini = controleD.getWorldPosition(new THREE.Vector3());
+      const meio = ini.clone().lerp(destino, 0.5); meio.y = ini.y + 0.55;
+      arco.geometry.dispose(); arco.geometry = new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(ini, meio, destino), 40, 0.006, 8, false);
+    }
+    arco.material.opacity = 0.9 * pa; retic.position.set(destino.x, 0.02, destino.z); retic.children[0].material.opacity = 0.9 * pa;
+    retic.children[0].scale.setScalar(1 + 0.12 * Math.sin(t * 8));
+    el('flash').style.opacity = Math.max(0, 1 - Math.abs(t - tTele) / 0.18);
+    // luz de destaque
+    luzDestaque(prog(t, s[2] + 0.4, s[2] + 1.2));
+    // mão direita vai até o livro, pega, gira e solta
+    const tHover = s[3] + 0.3, tPega = s[4] + 0.2, tSolta = s[5] + 0.2;
+    const pm = prog(t, tHover - 0.9, tHover);
+    const pg = prog(t, tPega, tPega + 1.3), ps = prog(t, tSolta, tSolta + 0.9);
+    const giro = Math.max(0, t - (tPega + 1.3));
+    const livroNaMao = ponto(0.45, 0.12, 1.15);
+    const livroPos = posLivro0.clone().lerp(livroNaMao, pg * (1 - ps));
+    livroAlvo.position.copy(livroPos);
+    const k = pg * (1 - ps);
+    livroAlvo.rotation.set(rotLivro0.x + (0.9 + 0.2 * Math.sin(giro * 1.4)) * k, rotLivro0.y + (0.8 + 0.6 * Math.sin(giro * 0.8)) * k, rotLivro0.z + 0.4 * k);
+    if (t > tTele) {
+      const mundoMao = posLivro0.clone().addScaledVector(dirJogador, 0.06).setY(topoMesa + 0.06).lerp(livroPos.clone().addScaledVector(dirJogador, 0.06), pg * (1 - ps));
+      const repouso = camera.localToWorld(v3(0.2, -0.24, -0.42));
+      const alvoMao = repouso.clone().lerp(mundoMao, pm * (1 - prog(t, tSolta + 0.5, tSolta + 1.4)));
+      controleD.position.copy(camera.worldToLocal(alvoMao));
+    }
+    contorno.material.opacity = 0.85 * prog(t, tHover - 0.2, tHover) * (1 - prog(t, tSolta + 0.6, tSolta + 1.0));
+    const opac = prog(t, tHover, tHover + 0.45) * (1 - prog(t, tSolta + 0.6, tSolta + 1.0));
+    mostrarPainel(t, opac, livroPos);
+  },
+  pc(d, t) {
+    el('capitulo').textContent = 'Modo PC';
+    el('tag').textContent = 'Simulação do jogo · modelo 3D e lógica do projeto';
+    const s = d.segmentos.map(x => x.inicio);
+    const pIni = ponto(4.4, 1.3, 1.6), pFim = ponto(1.15, -0.05, 1.6);
+    const pw = prog(t, 0.6, s[1] - 0.3);
+    const pos = pIni.clone().lerp(pFim, pw);
+    const alvo = ponto(0, 0.5, 1.0).lerp(ponto(0, 0, topoMesa + 0.05), prog(t, s[1] - 1.0, s[1]));
+    olharDe(pos, alvo);
+    el('mira').style.opacity = 1; el('teclas').style.opacity = prog(t, 0.2, 0.7); el('modo').style.opacity = prog(t, 0.2, 0.7);
+    const andando = t > 0.6 && t < s[1] - 0.3;
+    el('kw').classList.toggle('on', andando);
+    el('ka').classList.toggle('on', andando && t > 1.5 && t < 2.6);
+    const tE = s[1] + 1.2;
+    el('ke').classList.toggle('on', t > tE && t < tE + 0.5);
+    luzDestaque(prog(t, s[1] - 2.0, s[1] - 1.0));
+    contorno.material.opacity = 0.85 * prog(t, s[1] - 0.4, s[1]);
+    mostrarPainel(t, prog(t, tE + 0.05, tE + 0.5), posLivro0);
+  },
+  foto(d, t) { // imagens estáticas para os slides (sem HUD)
+    const [px, py, pz] = d.camera, [ax, ay, az] = d.alvo;
+    olharDe(v3(px, py, pz), v3(ax, ay, az));
+    luzDestaque(d.luz ?? 1);
+    if (d.painel) mostrarPainel(d.tClipe ?? 1.5, 1, posLivro0);
+  },
+  encerramento(d, t) {
+    el('capitulo').textContent = '';
+    el('tag').style.display = 'none';
+    const p = t / d.duracao;
+    olharDe(caminho([v3(-14.4, 1.55, 0.9), v3(-13.2, 1.75, 1.6), v3(-11.7, 2.0, 2.3)], p), v3(-16.5, 1.0, 0.2));
+    luzDestaque(1);
+    el('titulo').style.opacity = prog(t, d.segmentos[1].inicio - 0.6, d.segmentos[1].inicio + 0.3);
+    el('veu').style.opacity = 0.85 * prog(t, d.segmentos[1].inicio - 0.8, d.segmentos[1].inicio + 0.3);
+    el('titulo').querySelector('.t').textContent = 'Obrigado!';
+    el('titulo').querySelector('.s').textContent = 'Sebraelab VR · Exposição Interativa de Livros em Realidade Virtual';
+  },
+};
+
+window.desenhar = function (dados, t) {
+  resetHUD();
+  camera.fov = dados.fov || (dados.modo === 'vr' || dados.modo === 'pc' ? 70 : 55); camera.updateProjectionMatrix();
+  document.body.classList.toggle('limpo', !!dados.limpo);
+  document.body.classList.toggle('deck', !!dados.deck);
+  MODOS[dados.modo](dados, t);
+  renderer.render(cena, camera);
+  legendaFade(dados, t);
+};
+</script>
+</body>
+</html>
