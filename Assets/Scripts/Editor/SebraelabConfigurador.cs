@@ -197,7 +197,8 @@ public static class SebraelabConfigurador
             "Pronto! A cena Assets/Scenes/Sebraelab.unity foi criada e está aberta.\n\n" +
             "• Dê Play: sem óculos, use WASD + mouse e aperte E num livro.\n" +
             "• Com o Quest conectado (Link/Air Link), a mesma cena roda em VR.\n" +
-            "• Coloque o modelo do Sebraelab em Assets/Models e use Sebraelab > Cenário > Colocar modelo do Sebraelab na cena.\n\n" +
+            "• Na mesa estão os livros da Estante maranhense (Assets/Livros), com o painel de azulejos de São Luís.\n" +
+            "• Para gravar um vídeo do jogo: Sebraelab > Gravar vídeo de demonstração.\n\n" +
             "Lembre de fazer commit no Git (inclusive das pastas Packages e ProjectSettings).";
 
         if (avisos.Count > 0)
@@ -440,7 +441,7 @@ public static class SebraelabConfigurador
             var mesa = SebraelabMenu.EncontrarMesa(cenario);
             if (mesa != null)
             {
-                // Livros de exemplo em cima de uma mesa do Sebraelab e o jogador 1,8 m à frente dela.
+                // Estante maranhense em cima de uma mesa do Sebraelab e o jogador 1,8 m à frente dela.
                 var limitesMesa = mesa.bounds;
                 var centroMesa = new Vector3(limitesMesa.center.x, piso.max.y, limitesMesa.center.z);
                 var direcao = piso.center - centroMesa;
@@ -522,47 +523,53 @@ public static class SebraelabConfigurador
 
         // O jogador está no -Z local do estande (de frente para ele).
         CriarLivrosELuz(grupo.transform, alturaTampo: 0.75f, espaco: 0.4f, frenteLocal: Vector3.back);
+        SebraelabCulturaSaoLuis.CriarPainel(posicao + Vector3.up * 0.77f, rotacao * Vector3.back, posicao.y, posicao.y + 0.75f);
     }
 
-    /// <summary>Livros de exemplo em cima de uma mesa que já existe no cenário.</summary>
+    /// <summary>Livros da estante maranhense em cima de uma mesa que já existe no cenário.</summary>
     private static void CriarLivrosNaMesa(Bounds limitesMesa, Vector3 direcaoJogador)
     {
-        var grupo = new GameObject("Livros de exemplo (na mesa)");
+        var grupo = new GameObject("Estante maranhense (livros na mesa)");
         grupo.transform.SetPositionAndRotation(new Vector3(limitesMesa.center.x, limitesMesa.min.y, limitesMesa.center.z),
                                                Quaternion.LookRotation(direcaoJogador, Vector3.up));
         float largura = Mathf.Min(limitesMesa.size.x, limitesMesa.size.z);
         CriarLivrosELuz(grupo.transform, alturaTampo: limitesMesa.size.y, espaco: Mathf.Clamp((largura - 0.2f) / 2f, 0.18f, 0.4f),
                         frenteLocal: Vector3.forward);
+
+        // Painel de azulejos de São Luís atrás dos livros (na parede, se houver uma logo atrás).
+        var centroLivros = new Vector3(limitesMesa.center.x, limitesMesa.max.y + 0.02f, limitesMesa.center.z);
+        SebraelabCulturaSaoLuis.CriarPainel(centroLivros, direcaoJogador, limitesMesa.min.y, limitesMesa.max.y);
     }
 
     /// <summary>
-    /// Cria 3 livros configurados (com dados de exemplo), a luz de destaque acima deles e a zona de destaque
-    /// na frente (do lado "frenteLocal", onde fica o jogador).
+    /// Cria os livros da "Estante maranhense" (obras de autores de São Luís, ver SebraelabCulturaSaoLuis), a luz de
+    /// destaque acima deles e a zona de destaque na frente (do lado "frenteLocal", onde fica o jogador).
     /// </summary>
     private static void CriarLivrosELuz(Transform grupo, float alturaTampo, float espaco, Vector3 frenteLocal)
     {
-        var cores = new[] { new Color(0.8f, 0.2f, 0.2f), new Color(0.15f, 0.45f, 0.8f), new Color(0.2f, 0.65f, 0.35f) };
+        int quantidade = SebraelabCulturaSaoLuis.QuantidadeDeLivros;
         var lateral = Vector3.Cross(Vector3.up, frenteLocal).normalized;
-        for (int i = 0; i < cores.Length; i++)
+        for (int i = 0; i < quantidade; i++)
         {
             // Objeto do livro com escala 1 e o cubo (o "modelo") como filho: é assim que um modelo importado
             // normalmente fica, e evita que o popup herde a escala achatada do cubo.
             var livro = new GameObject($"Livro {i + 1}");
             livro.transform.SetParent(grupo, false);
-            livro.transform.localPosition = lateral * ((i - 1) * espaco) + Vector3.up * (alturaTampo + 0.02f);
-            livro.transform.localRotation = Quaternion.Euler(0f, (i - 1) * 12f, 0f);
+            float posicaoNaFila = i - (quantidade - 1) / 2f;
+            livro.transform.localPosition = lateral * (posicaoNaFila * espaco) + Vector3.up * (alturaTampo + 0.02f);
+            livro.transform.localRotation = Quaternion.Euler(0f, posicaoNaFila * 12f, 0f);
 
             var modelo = GameObject.CreatePrimitive(PrimitiveType.Cube);
             modelo.name = "Modelo";
             modelo.transform.SetParent(livro.transform, false);
             modelo.transform.localScale = new Vector3(0.16f, 0.03f, 0.23f); // ~16 x 23 cm, deitado
-            modelo.GetComponent<Renderer>().sharedMaterial = CriarMaterial($"Livro_Exemplo_{i + 1}", cores[i]);
+            modelo.GetComponent<Renderer>().sharedMaterial = CriarMaterial($"Livro_Estante_{i + 1}", SebraelabCulturaSaoLuis.CorDoLivro(i));
 
             var livroPopup = SebraelabMenu.ConfigurarLivro(livro);
             if (livroPopup == null) continue;
 
             var serializado = new SerializedObject(livroPopup);
-            serializado.FindProperty("dados").objectReferenceValue = CriarDadosDeExemplo(i + 1);
+            serializado.FindProperty("dados").objectReferenceValue = SebraelabCulturaSaoLuis.DadosDoLivro(i);
             serializado.ApplyModifiedPropertiesWithoutUndo();
         }
 
@@ -591,28 +598,6 @@ public static class SebraelabConfigurador
         objetos.arraySize = 1;
         objetos.GetArrayElementAtIndex(0).objectReferenceValue = luz;
         destaqueSerializado.ApplyModifiedPropertiesWithoutUndo();
-    }
-
-    private static LivroData CriarDadosDeExemplo(int numero)
-    {
-        CriarPasta(PastaLivros);
-        string caminho = $"{PastaLivros}/Livro de exemplo {numero}.asset";
-
-        var existente = AssetDatabase.LoadAssetAtPath<LivroData>(caminho);
-        if (existente != null) return existente;
-
-        var dados = ScriptableObject.CreateInstance<LivroData>();
-        AssetDatabase.CreateAsset(dados, caminho);
-
-        var serializado = new SerializedObject(dados);
-        serializado.FindProperty("titulo").stringValue = $"Livro de exemplo {numero}";
-        serializado.FindProperty("autor").stringValue = "Nome do autor";
-        serializado.FindProperty("resumo").stringValue =
-            $"Troque este texto pelo resumo do livro. Ele fica no arquivo {caminho} " +
-            "(selecione o arquivo na aba Project e edite no Inspector). Lá também dá para colocar a capa e o vídeo.";
-        serializado.ApplyModifiedPropertiesWithoutUndo();
-        AssetDatabase.SaveAssets();
-        return dados;
     }
 
     private static Material CriarMaterial(string nome, Color cor)

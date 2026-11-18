@@ -7,7 +7,7 @@ com a mão e vê um popup com título, autor, resumo, capa e uma animação (GIF
 | Documento | Para que serve |
 | --- | --- |
 | [`Docs/CONFIGURACAO_UNITY.md`](Docs/CONFIGURACAO_UNITY.md) | Passo a passo no Unity: abrir e configurar o projeto, cenário, livros, vídeos, build para o Quest |
-| [`Docs/Apresentacao/`](Docs/Apresentacao/) | Vídeo de apresentação do projeto (narrado, ~4 min) e o roteiro de cada cena |
+| [`Docs/Apresentacao/`](Docs/Apresentacao/) | Vídeo de apresentação, slides em PDF (`Sebraelab_VR_Slides.pdf`) e o roteiro de cada cena |
 | [`Docs/GDD_Sebraelab_VR.docx`](Docs/GDD_Sebraelab_VR.docx) | Game Design Document |
 | [`Docs/GUIDE_JOGO_SEBRAELAB.txt`](Docs/GUIDE_JOGO_SEBRAELAB.txt) | Guia original de implementação manual |
 
@@ -15,8 +15,9 @@ com a mão e vê um popup com título, autor, resumo, capa e uma animação (GIF
 
 - [x] Repositório é um projeto Unity 6 com XR Interaction Toolkit, OpenXR e Input System (`Packages/manifest.json`)
 - [x] Scripts: popup dos livros, dados dos livros, destaque dos estandes, jogador de teste no PC e menu de automação no editor
-- [x] Configurador automático: URP, OpenXR/Quest, XR Origin e a cena `Sebraelab.unity` com livros de exemplo
+- [x] Configurador automático: URP, OpenXR/Quest, XR Origin e a cena `Sebraelab.unity` já com os livros
 - [x] Modelo 3D do Sebraelab no projeto (`Assets/Sebraelab3D`): o configurador monta a cena dentro dele
+- [x] Cultura de São Luís: Estante maranhense (Aluísio Azevedo, Josué Montello, Ferreira Gullar) e painel de azulejos portugueses
 - [ ] **Fase 1**: abrir o projeto no Unity 6 e rodar o configurador (uma pessoa só) e conferir o cenário
 - [ ] **Fase 2**: posicionar e configurar os livros de verdade
 - [ ] **Fase 3**: textos, capas e vídeos de cada livro
@@ -32,9 +33,11 @@ Assets/
     UI/          PopupOlharParaJogador.cs
     Exposicao/   EstandeZonaDestaque.cs
     Player/      DesktopPlayerController.cs, DesktopInteracao.cs, EntradaDesktop.cs
-    Editor/      SebraelabMenu.cs, SebraelabConfigurador.cs  (menu "Sebraelab" no Unity)
+    Editor/      SebraelabMenu.cs, SebraelabConfigurador.cs, SebraelabCulturaSaoLuis.cs,
+                 SebraelabGravador.cs  (menu "Sebraelab" no Unity)
     Compat/      XRICompat.cs      (deixa os scripts compatíveis com XRI 2.x e 3.x)
   Sebraelab3D/   modelo 3D do Sebraelab ("Sebrae Lab.fbx"), móveis separados e texturas
+  CulturaSaoLuis/ vídeo dos azulejos (AzulejosSaoLuis.mp4); a textura e os materiais do azulejo são gerados aqui
   Models/        outros modelos 3D (.fbx / .obj / .glb)
   Materials/     materiais
   Videos/        GIFs convertidos para .mp4
@@ -58,7 +61,8 @@ Docs/            GDD, guia e passo a passo
 | `DesktopInteracao` | No teste pelo PC, mira num livro e aperta **E** ou clica para abrir o popup. |
 | `DemonstracaoGuiada` | Passeio automático pela cena (olha a sala, vai até os livros e abre os painéis), usado para gravar a demonstração. |
 | `SebraelabGravador` (Editor) | **Sebraelab > Gravar vídeo de demonstração**: dá Play, faz o passeio e grava um MP4 com o Unity Recorder em `Gravacoes/`. |
-| `SebraelabConfigurador` (Editor) | **Sebraelab > Configurar projeto VR (automático)**: instala o URP, importa o XR Origin, ativa o OpenXR para PC e Quest e cria a cena com um estande de exemplo. Pergunta sozinho na primeira vez que o projeto é aberto. |
+| `SebraelabConfigurador` (Editor) | **Sebraelab > Configurar projeto VR (automático)**: instala o URP, importa o XR Origin, ativa o OpenXR para PC e Quest e cria a cena com a Estante maranhense. Pergunta sozinho na primeira vez que o projeto é aberto. |
+| `SebraelabCulturaSaoLuis` (Editor) | Cultura de São Luís do Maranhão: cria os livros da **Estante maranhense** (obras de autores nascidos em São Luís), gera a textura de azulejo português e monta o painel de azulejos com a placa atrás dos livros (na parede, se houver uma logo atrás; senão num totem). Para uma cena antiga: **Sebraelab > Cultura de São Luís > Montar estante maranhense na cena aberta**. |
 | `SebraelabMenu` (Editor) | Menu **Sebraelab** no Unity: configura um livro inteiro com um clique, coloca o modelo do Sebraelab na cena com colliders e chão de teleporte, e cria o jogador de teste. |
 
 ### E a movimentação do personagem em VR?
