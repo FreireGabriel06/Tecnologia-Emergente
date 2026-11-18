@@ -56,6 +56,8 @@ Docs/            GDD, guia e passo a passo
 | `EstandeZonaDestaque` | Área do estande: liga luzes/objetos de destaque e toca um som quando o jogador chega perto. |
 | `DesktopPlayerController` | Jogador para testar no PC sem óculos (WASD + mouse). Sem headset, ele substitui o XR Origin; com headset, se desliga sozinho. |
 | `DesktopInteracao` | No teste pelo PC, mira num livro e aperta **E** ou clica para abrir o popup. |
+| `DemonstracaoGuiada` | Passeio automático pela cena (olha a sala, vai até os livros e abre os painéis), usado para gravar a demonstração. |
+| `SebraelabGravador` (Editor) | **Sebraelab > Gravar vídeo de demonstração**: dá Play, faz o passeio e grava um MP4 com o Unity Recorder em `Gravacoes/`. |
 | `SebraelabConfigurador` (Editor) | **Sebraelab > Configurar projeto VR (automático)**: instala o URP, importa o XR Origin, ativa o OpenXR para PC e Quest e cria a cena com um estande de exemplo. Pergunta sozinho na primeira vez que o projeto é aberto. |
 | `SebraelabMenu` (Editor) | Menu **Sebraelab** no Unity: configura um livro inteiro com um clique, coloca o modelo do Sebraelab na cena com colliders e chão de teleporte, e cria o jogador de teste. |
 

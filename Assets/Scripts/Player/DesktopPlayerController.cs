@@ -45,6 +45,12 @@ public class DesktopPlayerController : MonoBehaviour
     private float rotacaoVertical;
     private float velocidadeQueda;
 
+    /// <summary>Usa o modo PC mesmo com óculos conectado (ex.: na gravação automática da demonstração).</summary>
+    public static bool ForcarModoPC { get; set; }
+
+    /// <summary>Quando falso, teclado e mouse são ignorados (a DemonstracaoGuiada controla o jogador).</summary>
+    public bool AceitarEntrada { get; set; } = true;
+
     private static bool MouseTravado => Cursor.lockState == CursorLockMode.Locked;
 
     private void Awake()
@@ -62,9 +68,13 @@ public class DesktopPlayerController : MonoBehaviour
 
     private void Start()
     {
+#if UNITY_EDITOR
+        // Durante "Sebraelab > Gravar vídeo de demonstração" a gravação é sempre no modo PC.
+        if (UnityEditor.SessionState.GetBool("Sebraelab.Gravador.Ativo", false)) ForcarModoPC = true;
+#endif
         if (trocarAutomaticamente)
         {
-            if (UnityEngine.XR.XRSettings.isDeviceActive)
+            if (!ForcarModoPC && UnityEngine.XR.XRSettings.isDeviceActive)
             {
                 // Headset conectado: fica só o XR Origin.
                 if (xrOrigin != null) xrOrigin.SetActive(true);
@@ -83,6 +93,7 @@ public class DesktopPlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (!AceitarEntrada) return;
         if (EntradaDesktop.SoltarMousePressionado()) TravarMouse(false);
         else if (!MouseTravado && EntradaDesktop.CliquePressionado()) TravarMouse(true);
 

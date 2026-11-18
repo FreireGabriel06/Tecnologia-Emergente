@@ -118,6 +118,14 @@ public class LivroPopup : MonoBehaviour
 
         abertoManualmente = false;
         horaDeFechar = -1f;
+
+        // O popup se solta do livro ao abrir (PopupOlharParaJogador). Se o livro for desativado, ele não pode ficar
+        // flutuando sozinho: como já não é filho do livro, dá para desativá-lo aqui com segurança.
+        if (canvasPopup != null && !canvasPopup.transform.IsChildOf(transform) && canvasPopup.activeSelf)
+        {
+            if (videoPlayer != null) videoPlayer.Stop();
+            canvasPopup.SetActive(false);
+        }
     }
 
     private void Update()

@@ -113,6 +113,15 @@ O estande de exemplo já tem uma **Zona de destaque** e uma **Luz de destaque**.
 - Para testar o **pegar** sem óculos, use o **XR Device Simulator** (Package Manager > XR Interaction Toolkit > Samples).
   Nesse caso desmarque **Trocar Automaticamente** no `DesktopPlayerController` ou desative o *Jogador PC*.
 
+## 6.1 Gravar um vídeo real do jogo (1 clique)
+
+Com o projeto configurado, use **Sebraelab > Gravar vídeo de demonstração**. A Unity abre a cena, entra no Play e faz
+um passeio automático: olha a sala, vai até os livros e abre o painel de cada um. Tudo é gravado em MP4 (1920x1080) pelo
+**Unity Recorder**. No fim ela sai do Play sozinha e abre a pasta **`Gravacoes/`** do projeto com o arquivo
+`Sebraelab_demo.mp4`. Essa pasta fica fora de `Assets` e não vai para o Git.
+
+O passeio é feito pelo script `DemonstracaoGuiada` no jogador de PC e funciona mesmo sem óculos.
+
 ## 7. Gerar o app para o Meta Quest
 
 1. No Quest: ative o **modo desenvolvedor** (app Meta Horizon no celular).
