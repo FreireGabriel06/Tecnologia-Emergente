@@ -61,3 +61,6 @@ crashlytics-build.properties
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Vídeos gravados pela Unity (Sebraelab > Gravar vídeo de demonstração)
+/[Gg]ravacoes/
