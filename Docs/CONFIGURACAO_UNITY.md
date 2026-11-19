@@ -59,11 +59,12 @@ Para outro modelo, coloque o arquivo em **`Assets/Models`** antes de usar o menu
    para `Assets/Materials`. Se ficarem rosa: **Window > Rendering > Render Pipeline Converter > Material Upgrade**.
 5. O jogador começa de frente para a "Mesa Grande". Para começar na entrada, mova o **XR Origin** (e o *Jogador PC*).
 6. Se o teleporte não funcionar no piso, ajuste a altura do objeto **`Chao (teleporte)`** para ficar no nível do piso.
-7. Os **Livros de exemplo** podem ser movidos para outras mesas ou apagados depois de configurar os livros de verdade.
+7. Os livros da **Estante maranhense** (e o painel de azulejos atrás deles) podem ser movidos para outras mesas ou
+   apagados depois de configurar os livros de verdade.
 
 ## 3. Livros
 
-Os 3 livros do estande de exemplo já funcionam. Para os livros de verdade:
+Os 3 livros da Estante maranhense (ver 3.1) já funcionam. Para os livros de verdade:
 
 1. Coloque o modelo do livro em cima da mesa/estande e selecione-o na Hierarchy.
 2. Use **Sebraelab > Livros > Configurar livro selecionado**. Isso faz automaticamente os **PASSOS 4 e 5** do guia:
@@ -74,13 +75,30 @@ Os 3 livros do estande de exemplo já funcionam. Para os livros de verdade:
      resumo, vídeo e um botão *Iniciar Desafio* (desativado, para os minigames no futuro).
 3. Conteúdo do popup: na pasta `Assets/Livros`, botão direito > **Create > Sebraelab > Dados do Livro**.
    Preencha título, autor, resumo, capa e vídeo e arraste o asset para o campo **Dados** do `LivroPopup`.
-   Os livros de exemplo usam `Assets/Livros/Livro de exemplo 1/2/3`: é só editar esses arquivos.
+   Os livros da estante usam `Assets/Livros/O Mulato`, `Os Tambores de São Luís` e `Poema Sujo`: é só editar esses arquivos.
    Campos vazios (autor, capa, vídeo) somem do popup automaticamente.
 4. No `LivroPopup`, **Quando Mostrar** escolhe se o popup abre ao aproximar a mão, ao segurar, ou nos dois casos.
 5. Depois de configurar um livro, arraste-o para `Assets/Livros` para virar *prefab*. Os outros livros podem ser cópias
    desse prefab, trocando só o modelo e o campo **Dados**.
 
 > A mesa/estande precisa ter collider (passo 2), senão o livro cai através dela ao dar Play.
+
+### 3.1 Cultura de São Luís do Maranhão
+
+O configurador já monta, na mesa dos livros, a **Estante maranhense**:
+
+- **Livros:** *O Mulato* (Aluísio Azevedo, 1881), *Os Tambores de São Luís* (Josué Montello, 1975) e *Poema Sujo*
+  (Ferreira Gullar, 1976), três autores nascidos em São Luís. Os textos ficam em `Assets/Livros/<título>.asset`; a capa
+  fica vazia (coloque a imagem no campo **Capa**, se tiverem uma com direito de uso).
+- **Painel de azulejos:** padrão de azulejo português, como os dos casarões do Centro Histórico (Patrimônio Mundial da
+  UNESCO). A textura é **gerada pelo próprio script** (`Assets/CulturaSaoLuis/Azulejo_SaoLuis.png`), sem imagem externa.
+  O painel é fixado na parede logo atrás da mesa, quando ela existe; senão fica num totem de madeira. Em cima dele há a
+  placa *Estante maranhense · Autores nascidos em São Luís do Maranhão*.
+- **Popup:** todo painel de livro ganha uma faixa de azulejos no topo, e o vídeo `AzulejosSaoLuis.mp4` (6 s, em loop)
+  é o vídeo dos três livros da estante.
+
+Se a cena foi criada antes disso, abra-a e use **Sebraelab > Cultura de São Luís > Montar estante maranhense na cena
+aberta**: os livros que ainda usam os dados de exemplo passam a ser os da estante e o painel é criado.
 
 ## 4. GIFs (vídeos)
 

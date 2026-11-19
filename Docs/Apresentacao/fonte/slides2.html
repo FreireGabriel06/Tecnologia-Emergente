@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Sebraelab VR - Slides v2</title>
+<style>
+  :root {
+    --n0: #060b1a; --n1: #0a1430; --n2: #10204a; --texto: #edf2ff; --suave: #a9b8d8; --fraco: #7184a8;
+    --cobalto: #1f3c88; --azul: #4f7fe0; --ciano: #4cc9f0; --creme: #f3efe4; --ouro: #e9b44c; --verm: #d4434b; --verde: #3ccf91;
+    --cartao: rgba(255,255,255,0.05); --borda: rgba(255,255,255,0.11);
+    --u-fundo: #1b1b1b; --u-painel: #282828; --u-aba: #3c3c3c; --u-campo: #1f1f1f; --u-linha: #121212; --u-texto: #d2d2d2; --u-fraco: #8f8f8f; --u-sel: #2c5d87;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--n0); font-family: 'Inter', sans-serif; color: var(--texto); -webkit-font-smoothing: antialiased; }
+  #palco { position: relative; width: 1920px; height: 1080px; overflow: hidden;
+    background: radial-gradient(1200px 800px at 90% 0%, rgba(79,127,224,.22), transparent 60%), radial-gradient(900px 700px at 0% 100%, rgba(76,201,240,.12), transparent 60%), linear-gradient(165deg, var(--n0), var(--n1) 55%, var(--n0)); }
+  #padrao { position: absolute; inset: 0; opacity: .055; background-size: 132px 132px; -webkit-mask-image: linear-gradient(105deg, transparent 40%, #000 100%); }
+  #faixa { position: absolute; top: 0; left: 0; right: 0; height: 22px; background-size: 22px 22px; opacity: .9; }
+  #faixa::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(6,11,26,.0), rgba(6,11,26,.25) 50%, rgba(6,11,26,.0)); }
+  header { position: absolute; top: 52px; left: 96px; right: 96px; display: flex; justify-content: space-between; align-items: center; font-size: 21px; font-weight: 600; color: var(--suave); z-index: 6; }
+  header .marca { display: flex; align-items: center; gap: 12px; color: var(--texto); font-weight: 700; background: rgba(6,11,26,.78); border: 1px solid var(--borda); padding: 8px 18px 8px 14px; border-radius: 999px; }
+  header .marca svg { width: 30px; height: 30px; color: var(--ciano); }
+  header .marca .sep { width: 1px; height: 22px; background: var(--borda); margin: 0 8px; }
+  header .marca .secao { color: var(--suave); font-weight: 600; }
+  header .direita { display: flex; gap: 18px; align-items: center; }
+  header .contador { font-variant-numeric: tabular-nums; color: var(--texto); background: rgba(255,255,255,.07); border: 1px solid var(--borda); padding: 6px 14px; border-radius: 999px; font-size: 19px; }
+  #selo { display: none; font-size: 17px; font-weight: 600; color: #ffd98a; background: rgba(233,180,76,.12); border: 1px solid rgba(233,180,76,.35); padding: 6px 14px; border-radius: 999px; }
+  body.unity #selo { display: inline-block; }
+
+  .cena { position: absolute; inset: 0; padding: 138px 112px 0; display: none; }
+  .cena.ativa { display: block; }
+  .eyebrow { font-size: 20px; letter-spacing: .22em; text-transform: uppercase; color: var(--ciano); font-weight: 800; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
+  .eyebrow i { display: inline-block; width: 26px; height: 26px; background-size: 26px 26px; border-radius: 4px; }
+  h1 { font-size: 62px; font-weight: 800; margin: 0 0 36px; letter-spacing: -0.025em; line-height: 1.06; }
+  h1 em { font-style: normal; color: var(--ciano); }
+  .cartao { background: var(--cartao); border: 1px solid var(--borda); border-radius: 24px; padding: 30px; position: relative; overflow: hidden; }
+  .icone { display: inline-flex; align-items: center; justify-content: center; width: 72px; height: 72px; border-radius: 20px; flex: none; }
+  .icone svg { width: 38px; height: 38px; }
+  .c-azul { background: rgba(79,127,224,.18); color: #9dbcff; } .c-ciano { background: rgba(76,201,240,.15); color: var(--ciano); }
+  .c-ouro { background: rgba(233,180,76,.16); color: var(--ouro); } .c-verm { background: rgba(212,67,75,.17); color: #ff8a90; }
+  .c-verde { background: rgba(60,207,145,.15); color: var(--verde); } .c-creme { background: rgba(243,239,228,.12); color: var(--creme); }
+  .titulo-c { font-size: 30px; font-weight: 750; letter-spacing: -0.01em; margin: 0 0 8px; }
+  .texto-c { font-size: 23px; line-height: 1.45; color: var(--suave); }
+  .canto { position: absolute; top: 0; right: 0; width: 64px; height: 64px; background-size: 64px 64px; opacity: .18; border-bottom-left-radius: 24px; }
+  .foto { position: absolute; border-radius: 26px; overflow: hidden; border: 1px solid var(--borda); box-shadow: 0 30px 80px rgba(0,0,0,.45); }
+  .foto img { width: 100%; height: 100%; object-fit: cover; display: block; transform-origin: 50% 50%; }
+  .foto .rot { position: absolute; left: 20px; bottom: 20px; font-size: 18px; font-weight: 700; padding: 8px 14px; border-radius: 999px; background: rgba(6,11,26,.72); border: 1px solid var(--borda); display: flex; gap: 8px; align-items: center; }
+  .foto .rot svg { width: 18px; height: 18px; color: var(--ciano); }
+  .mono { font-family: 'JetBrains Mono', 'DejaVu Sans Mono', monospace; }
+
+  #legenda { position: absolute; left: 50%; bottom: 46px; transform: translateX(-50%); max-width: 1700px; width: max-content; z-index: 10;
+    background: rgba(4,7,16,.80); border: 1px solid rgba(255,255,255,.10); border-radius: 16px; padding: 14px 28px; font-size: 30px; line-height: 1.35; font-weight: 500; text-align: center; color: #fff; display: none; }
+  #fade { position: absolute; inset: 0; background: #070b16; z-index: 20; opacity: 0; }
+  body.deck #legenda, body.deck #fade { display: none !important; }
+
+  /* ---------- proposta ---------- */
+  #c-proposta .pergunta { width: 900px; font-size: 58px; font-weight: 800; line-height: 1.12; letter-spacing: -0.025em; margin: 6px 0 46px; }
+  #c-proposta .pergunta .aspas { color: var(--ciano); }
+  #c-proposta .beneficios { width: 880px; display: flex; flex-direction: column; gap: 18px; }
+  #c-proposta .ben { display: flex; gap: 22px; align-items: center; padding: 20px 26px; }
+  #c-proposta .ben .titulo-c { font-size: 27px; margin: 0; }
+  #c-proposta .ben .texto-c { font-size: 21px; }
+
+  /* ---------- pilares ---------- */
+  .linha4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 26px; margin-top: 30px; }
+  .linha4 .cartao { min-height: 600px; padding: 36px 32px 0; display: flex; flex-direction: column; }
+  .linha4 .mini { margin: auto -32px 0; height: 210px; border-top: 1px solid var(--borda); overflow: hidden; position: relative; }
+  .linha4 .mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .linha4 .mini pre { margin: 0; padding: 26px 24px; font-family: 'JetBrains Mono', monospace; font-size: 18px; line-height: 1.55; color: #bcbec4; background: #1e1f22; height: 100%; }
+  .linha4 .icone { width: 92px; height: 92px; border-radius: 26px; } .linha4 .icone svg { width: 48px; height: 48px; }
+  .linha4 .num { font-size: 20px; font-weight: 800; color: var(--fraco); letter-spacing: .12em; margin: 28px 0 10px; }
+  .linha4 .titulo-c { font-size: 34px; } .linha4 .texto-c { font-size: 24px; }
+
+  /* ---------- São Luís ---------- */
+  #c-sao_luis { padding: 0; }
+  #c-sao_luis .parede { position: absolute; left: 0; top: 0; bottom: 0; width: 820px; background-size: 136px 136px; }
+  #c-sao_luis .parede::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(6,11,26,0) 55%, rgba(6,11,26,.92) 92%, var(--n0)); }
+  #c-sao_luis .placa { position: absolute; left: 90px; top: 360px; width: 560px; background: var(--creme); color: var(--cobalto); border-radius: 10px; padding: 30px 36px; box-shadow: 0 30px 70px rgba(0,0,0,.45); border: 6px solid #3d2617; }
+  #c-sao_luis .placa .t { font-size: 50px; font-weight: 850; letter-spacing: -0.02em; line-height: 1.05; }
+  #c-sao_luis .placa .s { font-size: 24px; color: #4b5878; margin-top: 10px; font-weight: 600; }
+  #c-sao_luis .fotoEstante { left: 70px; top: 150px; width: 760px; height: 700px; }
+  #c-sao_luis .direita { position: absolute; left: 900px; top: 138px; width: 910px; }
+  #c-sao_luis h1 { font-size: 58px; margin-bottom: 28px; }
+  #c-sao_luis .patrimonio { display: flex; gap: 24px; align-items: center; padding: 24px 28px; margin-bottom: 22px; }
+  #c-sao_luis .grade3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 22px; }
+  #c-sao_luis .grade3 .cartao { padding: 22px 22px; min-height: 214px; }
+  #c-sao_luis .grade3 .icone { width: 56px; height: 56px; border-radius: 16px; } #c-sao_luis .grade3 .icone svg { width: 30px; height: 30px; }
+  #c-sao_luis .grade3 .titulo-c { font-size: 25px; margin-top: 16px; } #c-sao_luis .grade3 .texto-c { font-size: 20px; line-height: 1.38; }
+  #c-sao_luis .autores { display: flex; align-items: center; gap: 14px; padding: 18px 24px; font-size: 22px; color: var(--suave); }
+  #c-sao_luis .autores b { color: var(--texto); font-weight: 700; }
+  #c-sao_luis .livros { position: absolute; left: 0; top: 130px; width: 910px; display: flex; flex-direction: column; gap: 18px; }
+  #c-sao_luis .livro { display: flex; gap: 24px; align-items: center; padding: 22px 26px; }
+  #c-sao_luis .lombada { width: 22px; height: 84px; border-radius: 5px; flex: none; box-shadow: inset -4px 0 0 rgba(0,0,0,.2); }
+  #c-sao_luis .livro .titulo-c { font-size: 30px; margin: 0; } #c-sao_luis .livro .texto-c { font-size: 21px; }
+  #c-sao_luis .nota { display: flex; gap: 16px; align-items: center; padding: 18px 24px; font-size: 20px; color: var(--suave); }
+  #c-sao_luis .nota i { width: 54px; height: 54px; flex: none; background-size: 54px 54px; border-radius: 6px; }
+
+  /* ---------- tecnologias ---------- */
+  .grade-tec { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+  .tec { padding: 28px 28px 26px; min-height: 236px; }
+  .tec .logo { width: 70px; height: 70px; border-radius: 18px; display: flex; align-items: center; justify-content: center; }
+  .tec .logo svg { width: 40px; height: 40px; }
+  .tec .nome { font-size: 30px; font-weight: 800; margin-top: 20px; letter-spacing: -0.01em; display: flex; align-items: baseline; gap: 10px; }
+  .tec .nome small { font-size: 18px; color: var(--fraco); font-weight: 700; }
+  .tec .papel { font-size: 21px; color: var(--suave); line-height: 1.4; margin-top: 6px; }
+  .tambem { margin-top: 22px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; font-size: 20px; color: var(--suave); }
+  .tambem .chip { padding: 8px 16px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid var(--borda); color: #dbe5ff; font-weight: 600; }
+
+  /* ---------- Unity (reprodução) ---------- */
+  .editor { position: absolute; left: 96px; right: 96px; top: 124px; height: 788px; background: var(--u-fundo); border-radius: 14px; border: 1px solid #000; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,.55); font-size: 19px; color: var(--u-texto); }
+  .u-menu { height: 38px; background: #202020; display: flex; align-items: center; gap: 26px; padding: 0 18px; font-size: 18px; border-bottom: 1px solid var(--u-linha); }
+  .u-menu .logo { width: 22px; height: 22px; color: #fff; } .u-menu .logo svg { width: 22px; height: 22px; }
+  .u-menu span.on { background: #4b4b4b; color: #fff; padding: 4px 8px; margin: 0 -8px; border-radius: 4px; }
+  .u-menu .titulo { margin-left: auto; color: var(--u-fraco); font-size: 16px; }
+  .u-barra { height: 42px; background: #282828; border-bottom: 1px solid var(--u-linha); display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .u-barra .b { width: 34px; height: 28px; border-radius: 4px; background: #3a3a3a; display: flex; align-items: center; justify-content: center; }
+  .u-barra .b svg { width: 16px; height: 16px; color: #ddd; }
+  .u-area { position: absolute; top: 80px; left: 0; right: 0; bottom: 0; display: grid; gap: 2px; background: var(--u-linha); }
+  .u-janela { background: var(--u-painel); display: flex; flex-direction: column; overflow: hidden; position: relative; }
+  .u-abas { height: 34px; background: #202020; display: flex; align-items: flex-end; }
+  .u-abas .aba { padding: 0 16px; height: 30px; display: flex; align-items: center; gap: 8px; font-size: 16.5px; color: var(--u-fraco); }
+  .u-abas .aba.on { background: var(--u-painel); color: #eee; border-top: 2px solid #4a90d9; border-radius: 3px 3px 0 0; }
+  .u-abas .aba svg { width: 15px; height: 15px; }
+  .u-corpo { flex: 1; padding: 8px 0; position: relative; overflow: hidden; }
+  .linha-h { height: 28px; display: flex; align-items: center; gap: 8px; padding-left: calc(14px + var(--n, 0) * 22px); font-size: 17.5px; white-space: nowrap; }
+  .linha-h svg { width: 17px; height: 17px; color: #9aa; flex: none; }
+  .linha-h .seta { width: 12px; color: #999; font-size: 12px; }
+  .linha-h.sel { background: var(--u-sel); color: #fff; }
+  .linha-h.on { background: rgba(76,201,240,.22); box-shadow: inset 3px 0 0 var(--ciano); color: #fff; }
+  .linha-h .azul { color: #6fb6ff; }
+  .u-cena { position: relative; flex: 1; background: #303030; overflow: hidden; }
+  .u-cena img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .u-cena .gizmo { position: absolute; right: 14px; top: 12px; width: 76px; height: 76px; }
+  .u-campo { display: grid; grid-template-columns: 210px 1fr; align-items: center; min-height: 32px; padding: 0 14px 0 22px; font-size: 17px; gap: 10px; }
+  .u-campo .v { background: var(--u-campo); border: 1px solid #111; border-radius: 3px; padding: 3px 8px; color: #e6e6e6; min-height: 26px; display: flex; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap; }
+  .u-campo .v.obj::before { content: ''; width: 14px; height: 14px; border-radius: 3px; background: #6a8fd8; flex: none; }
+  .u-campo .v.chk { width: 20px; height: 20px; padding: 0; justify-content: center; font-size: 14px; color: #fff; }
+  .u-cab { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 12px; background: #333; border-top: 1px solid var(--u-linha); font-weight: 700; font-size: 17.5px; }
+  .u-cab svg { width: 17px; height: 17px; }
+  .u-cab .ck { width: 16px; height: 16px; border-radius: 3px; background: #4a90d9; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; }
+  .u-comp { position: relative; transition: none; }
+  .u-comp.on::after { content: ''; position: absolute; inset: 0; border: 2px solid var(--ciano); border-radius: 4px; box-shadow: 0 0 0 4px rgba(76,201,240,.18); pointer-events: none; }
+  .u-sec { padding: 6px 22px 2px; font-size: 16px; font-weight: 700; color: #bdbdbd; }
+  .arq { display: flex; align-items: center; gap: 8px; font-size: 16.5px; color: #d6d6d6; height: 27px; white-space: nowrap; }
+  .arq svg { width: 18px; height: 18px; color: #9b7cf4; flex: none; }
+  .u-console .log { display: flex; gap: 10px; align-items: flex-start; padding: 5px 14px; font-size: 16.5px; border-bottom: 1px solid #222; font-family: 'JetBrains Mono', monospace; }
+  .u-console .log svg { width: 18px; height: 18px; color: #c9c9c9; flex: none; margin-top: 2px; }
+  .menu-sub { position: absolute; background: #2b2b2b; border: 1px solid #111; border-radius: 6px; box-shadow: 0 16px 40px rgba(0,0,0,.6); padding: 6px 0; font-size: 18px; z-index: 30; min-width: 420px; }
+  .menu-sub .it { padding: 7px 18px 7px 30px; display: flex; justify-content: space-between; gap: 30px; white-space: nowrap; }
+  .menu-sub .it.on { background: #2f6bb3; color: #fff; }
+  .menu-sub .sep { height: 1px; background: #444; margin: 5px 10px; }
+  .dialogo { position: absolute; background: #2d2d2d; border: 1px solid #111; border-radius: 10px; box-shadow: 0 30px 70px rgba(0,0,0,.7); z-index: 40; overflow: hidden; }
+  .dialogo .tit { height: 38px; background: #222; display: flex; align-items: center; padding: 0 16px; font-size: 17px; color: #ddd; font-weight: 600; }
+  .dialogo .corpo { padding: 20px 24px; font-size: 18px; line-height: 1.5; color: #e8e8e8; }
+  .barra-prog { height: 10px; background: #1a1a1a; border-radius: 5px; overflow: hidden; margin-top: 14px; }
+  .barra-prog i { display: block; height: 100%; background: #4a90d9; width: 0; }
+  .botao-u { display: inline-block; padding: 6px 22px; background: #4a4a4a; border: 1px solid #111; border-radius: 4px; font-size: 17px; float: right; margin-top: 12px; }
+  #cursor { position: absolute; width: 30px; height: 30px; z-index: 50; display: none; pointer-events: none; filter: drop-shadow(0 2px 3px rgba(0,0,0,.6)); }
+  body.unity #cursor.ativo { display: block; }
+
+  /* código */
+  .codigo { position: absolute; left: 96px; right: 96px; top: 124px; height: 788px; background: #1e1f22; border-radius: 14px; border: 1px solid #000; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,.55); }
+  .codigo .abas { height: 44px; background: #2b2d30; display: flex; align-items: flex-end; padding-left: 10px; border-bottom: 1px solid #111; }
+  .codigo .abas .aba { padding: 0 20px; height: 38px; display: flex; align-items: center; gap: 10px; font-size: 17px; color: #ccc; background: #1e1f22; border-radius: 6px 6px 0 0; }
+  .codigo .abas .aba svg { width: 18px; height: 18px; color: #9b7cf4; }
+  .codigo .caminho { position: absolute; right: 22px; top: 12px; font-size: 16px; color: #8a8f98; }
+  .codigo pre { margin: 0; padding: 16px 0; font-family: 'JetBrains Mono', monospace; font-size: 19px; line-height: 1.27; color: #bcbec4; }
+  .codigo .ln { display: grid; grid-template-columns: 78px 1fr; padding-right: 30px; position: relative; }
+  .codigo .ln .n { color: #4b5059; text-align: right; padding-right: 22px; user-select: none; }
+  .codigo .ln.gap .n, .codigo .ln.gap .c { color: #5a5f69; }
+  .codigo .ln.on { background: rgba(76,201,240,.13); }
+  .codigo .ln.on::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--ciano); }
+  .codigo .ln.on .n { color: #9fd8ef; }
+  .hljs-keyword, .hljs-built_in { color: #cf8e6d; } .hljs-title, .hljs-title.function_ { color: #56a8f5; } .hljs-string { color: #6aab73; }
+  .hljs-comment { color: #7a7e85; font-style: italic; } .hljs-number, .hljs-literal { color: #2aacb8; } .hljs-type, .hljs-title.class_ { color: #e8bf6a; } .hljs-params { color: #bcbec4; }
+  .nota-cod { position: absolute; right: 40px; z-index: 5; width: 520px; padding: 20px 24px; font-size: 21px; line-height: 1.4; background: rgba(16,32,74,.92); border: 1px solid rgba(76,201,240,.45); border-radius: 16px; color: #e8f6ff; box-shadow: 0 20px 50px rgba(0,0,0,.5); }
+  .nota-cod b { color: var(--ciano); }
+
+  /* ---------- arquitetura ---------- */
+  #c-arquitetura svg.lig { position: absolute; inset: 0; pointer-events: none; }
+  .no { position: absolute; padding: 16px 20px; border-radius: 16px; background: rgba(16,32,74,.75); border: 1px solid rgba(255,255,255,.14); font-size: 22px; font-weight: 700; }
+  .no small { display: block; font-size: 16.5px; font-weight: 500; color: var(--suave); margin-top: 4px; font-family: 'Inter'; }
+  .no.cs { font-family: 'JetBrains Mono', monospace; font-size: 21px; }
+  .grupo { position: absolute; border: 1.5px dashed rgba(255,255,255,.16); border-radius: 22px; }
+  .grupo .rotulo { position: absolute; top: -15px; left: 22px; padding: 0 10px; background: #0a1430; font-size: 17px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--fraco); }
+  .no.futuro { border: 2px dashed var(--ouro); background: rgba(233,180,76,.10); color: #ffe2a6; }
+
+  /* ---------- processo ---------- */
+  .git { position: absolute; left: 112px; top: 300px; width: 1000px; height: 520px; }
+  .pr { position: absolute; display: flex; gap: 12px; align-items: center; font-size: 20px; color: var(--suave); white-space: nowrap; }
+  .pr b { color: var(--texto); font-family: 'JetBrains Mono', monospace; font-size: 19px; background: rgba(60,207,145,.14); color: #8ff0c4; border: 1px solid rgba(60,207,145,.35); padding: 2px 10px; border-radius: 999px; }
+
+  /* ---------- roadmap ---------- */
+  .colunas { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; margin-top: 10px; }
+  .colunas .cartao { padding: 34px 36px; min-height: 560px; }
+  .colunas .cab { display: flex; gap: 18px; align-items: center; font-size: 32px; font-weight: 800; margin-bottom: 22px; }
+  .item { display: flex; gap: 16px; align-items: center; font-size: 26px; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+  .item svg { width: 30px; height: 30px; flex: none; }
+  .item.ok svg { color: var(--verde); } .item.prox svg { color: var(--ouro); }
+  .item small { display: block; font-size: 19px; color: var(--fraco); margin-top: 2px; }
+</style>
+</head>
+<body>
+<div id="palco">
+  <div id="padrao"></div>
+  <div id="faixa"></div>
+  <header>
+    <div class="marca">{{icone:glasses}} Sebraelab VR <span class="sep"></span> <span class="secao" id="secao"></span></div>
+    <div class="direita"><span id="selo">Reprodução da interface da Unity · nomes, campos e código reais do projeto</span><span class="contador" id="contador"></span></div>
+  </header>
+
+  <!-- ============ PROPOSTA ============ -->
+  <section class="cena" id="c-proposta" data-secao="A proposta">
+    <div class="eyebrow" data-passo="1"><i class="az"></i>A proposta</div>
+    <div class="pergunta" data-passo="1" data-atraso="0.3"><span class="aspas">“</span>Como aproximar as pessoas dos livros e do ambiente de inovação do Sebrae, <em style="font-style:normal;color:var(--ciano)">mesmo à distância?</em><span class="aspas">”</span></div>
+    <div class="beneficios">
+      <div class="cartao ben" data-passo="2" data-atraso="0.9"><span class="icone c-ciano">{{icone:footprints}}</span><div><div class="titulo-c">Explorar no próprio ritmo</div><div class="texto-c">O visitante anda pelo Sebraelab como se estivesse lá.</div></div></div>
+      <div class="cartao ben" data-passo="2" data-atraso="3.6"><span class="icone c-azul">{{icone:hand}}</span><div><div class="titulo-c">Interagir com o conteúdo</div><div class="texto-c">Pega o livro, gira e vê título, autor, resumo e vídeo.</div></div></div>
+      <div class="cartao ben" data-passo="2" data-atraso="5.6"><span class="icone c-ouro">{{icone:sparkles}}</span><div><div class="titulo-c">Mais marcante que uma lista ou um site</div><div class="texto-c">A descoberta acontece no espaço, com o corpo todo.</div></div></div>
+    </div>
+    <div class="foto" style="left: 1080px; top: 150px; width: 730px; height: 740px;" data-passo="1" data-atraso="0.6">
+      <img src="img/visao3.jpg" class="zoom" alt="" style="object-position: 62% 50%">
+      <div class="rot">{{icone:box}} Modelo 3D do Sebraelab</div>
+    </div>
+  </section>
+
+  <!-- ============ PILARES ============ -->
+  <section class="cena" id="c-pilares" data-secao="Pilares do projeto">
+    <div class="eyebrow" data-passo="1"><i class="az"></i>Pilares</div>
+    <h1 data-passo="1" data-atraso="0.2">Quatro pilares sustentam a experiência</h1>
+    <div class="linha4">
+      <div class="cartao" data-passo="1" data-atraso="2.2"><span class="canto az"></span><span class="icone c-ciano">{{icone:building-2}}</span><div class="num">01</div><div class="titulo-c">Cenário fiel</div><div class="texto-c">Réplica 3D do Sebraelab, com colisão nas paredes e piso para teletransporte.</div><div class="mini"><img src="img/visao1.jpg" style="object-position: 40% 60%" alt=""></div></div>
+      <div class="cartao" data-passo="1" data-atraso="5.1"><span class="canto az"></span><span class="icone c-azul">{{icone:hand}}</span><div class="num">02</div><div class="titulo-c">Interação natural</div><div class="texto-c">Aproximar a mão, pegar, girar e soltar os livros, como na vida real.</div><div class="mini"><img src="img/estante.jpg" style="object-position: 45% 70%" alt=""></div></div>
+      <div class="cartao" data-passo="2" data-atraso="0.8"><span class="canto az"></span><span class="icone c-ouro">{{icone:clapperboard}}</span><div class="num">03</div><div class="titulo-c">Conteúdo multimídia</div><div class="texto-c">Cada livro mostra título, autor, resumo, capa e um vídeo em repetição.</div><div class="mini"><img src="img/clipe.png" alt=""></div></div>
+      <div class="cartao" data-passo="2" data-atraso="2.7"><span class="canto az"></span><span class="icone c-verde">{{icone:blocks}}</span><div class="num">04</div><div class="titulo-c">Arquitetura modular</div><div class="texto-c">Scripts independentes, com um ponto de entrada pronto para minijogos.</div><div class="mini"><pre><span style="color:#cf8e6d">public void</span> <span style="color:#56a8f5">IniciarMinigame</span>()
+{
+    Debug.<span style="color:#56a8f5">Log</span>(…);
+    aoIniciarMinigame.<span style="color:#56a8f5">Invoke</span>();
+}</pre></div></div>
+    </div>
+  </section>
+
+  <!-- ============ SÃO LUÍS ============ -->
+  <section class="cena" id="c-sao_luis" data-secao="Cultura de São Luís">
+    <div class="parede az" data-passo="1" data-sai="3:-0.2"></div>
+    <div class="placa" data-passo="1" data-atraso="0.4" data-sai="3:-0.2"><div class="t">São Luís<br>do Maranhão</div><div class="s">A cidade dos azulejos · fundada em 1612</div></div>
+    <div class="foto fotoEstante" data-passo="3" data-atraso="0.2"><img src="img/estante.jpg" class="zoom" alt=""><div class="rot">{{icone:gamepad-2}} No jogo: a Estante maranhense</div></div>
+    <div class="direita">
+      <div data-passo="1" data-sai="3:-0.2">
+        <div class="eyebrow"><i class="az"></i>Identidade cultural</div>
+        <h1>Raízes em São Luís</h1>
+        <div class="cartao patrimonio" data-passo="1" data-atraso="4.2"><span class="icone c-azul">{{icone:landmark}}</span><div><div class="titulo-c">Centro Histórico</div><div class="texto-c">Patrimônio Mundial da UNESCO desde 1997, com casarões revestidos de azulejos portugueses.</div></div></div>
+        <div class="grade3">
+          <div class="cartao" data-passo="2" data-atraso="0.6"><span class="icone c-verm">{{icone:sparkles}}</span><div class="titulo-c">Bumba-meu-boi</div><div class="texto-c">Patrimônio Cultural Imaterial da Humanidade (UNESCO, 2019).</div></div>
+          <div class="cartao" data-passo="2" data-atraso="1.9"><span class="icone c-ouro">{{icone:drum}}</span><div class="titulo-c">Tambor de Crioula</div><div class="texto-c">Patrimônio Cultural do Brasil (IPHAN, 2007).</div></div>
+          <div class="cartao" data-passo="2" data-atraso="3.1"><span class="icone c-verde">{{icone:music}}</span><div class="titulo-c">Reggae</div><div class="texto-c">Tão forte na cidade que ela é chamada de “Jamaica brasileira”.</div></div>
+        </div>
+        <div class="cartao autores" data-passo="2" data-atraso="5.0"><span class="icone c-creme" style="width:52px;height:52px;border-radius:14px">{{icone:book-open}}</span><span>Escritores: <b>Aluísio Azevedo</b> · <b>Josué Montello</b> · <b>Ferreira Gullar</b></span></div>
+      </div>
+      <div class="livros">
+        <div class="eyebrow" data-passo="3"><i class="az"></i>Estante maranhense</div>
+        <div class="cartao livro" data-passo="3" data-atraso="0.8"><span class="lombada" style="background:#1f3d87"></span><div><div class="titulo-c">O Mulato</div><div class="texto-c">Aluísio Azevedo · 1881</div></div></div>
+        <div class="cartao livro" data-passo="3" data-atraso="1.3"><span class="lombada" style="background:#b32129"></span><div><div class="titulo-c">Os Tambores de São Luís</div><div class="texto-c">Josué Montello · 1975</div></div></div>
+        <div class="cartao livro" data-passo="3" data-atraso="1.8"><span class="lombada" style="background:#db9e1f"></span><div><div class="titulo-c">Poema Sujo</div><div class="texto-c">Ferreira Gullar · 1976</div></div></div>
+        <div class="cartao nota" data-passo="3" data-atraso="4.0"><i class="az"></i><span>O painel de azulejos é gerado pelo próprio projeto: o mesmo desenho aparece no jogo, no topo de cada painel de livro e neste vídeo.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TECNOLOGIAS ============ -->
+  <section class="cena" id="c-tecnologias" data-secao="Tecnologias">
+    <div class="eyebrow" data-passo="1"><i class="az"></i>Tecnologias</div>
+    <h1 data-passo="1" data-atraso="0.2">O que usamos para construir</h1>
+    <div class="grade-tec">
+      <div class="cartao tec" data-passo="1" data-atraso="1.6"><div class="logo" style="background:#fff;color:#000">{{logo:unity}}</div><div class="nome">Unity <small>6000.0 LTS</small></div><div class="papel">Motor do jogo: cena, física, interface e build para o Quest.</div></div>
+      <div class="cartao tec" data-passo="1" data-atraso="3.2"><div class="logo c-ciano">{{icone:layers}}</div><div class="nome">URP <small>17</small></div><div class="papel">Universal Render Pipeline: gráficos leves para óculos autônomos.</div></div>
+      <div class="cartao tec" data-passo="2" data-atraso="0.9"><div class="logo c-azul">{{icone:grab}}</div><div class="nome">XR Interaction Toolkit <small>3.7</small></div><div class="papel">Pegar, apontar, aproximar a mão e teletransportar.</div></div>
+      <div class="cartao tec" data-passo="2" data-atraso="3.5"><div class="logo" style="background:#e6e8ee;color:#1b2a4a;font-weight:900;font-size:24px;letter-spacing:-0.02em">XR</div><div class="nome">OpenXR <small>1.19</small></div><div class="papel">Padrão aberto que liga o jogo aos óculos de VR.</div></div>
+      <div class="cartao tec" data-passo="2" data-atraso="5.0"><div class="logo" style="background:#0866ff;color:#fff">{{logo:meta}}</div><div class="nome">Meta Quest</div><div class="papel">Óculos alvo, com controles Touch e Touch Plus.</div></div>
+      <div class="cartao tec" data-passo="3" data-atraso="0.9"><div class="logo" style="background:#e87d0d;color:#fff">{{logo:blender}}</div><div class="nome">Blender</div><div class="papel">Modelagem do cenário do Sebraelab em 3D.</div></div>
+      <div class="cartao tec" data-passo="3" data-atraso="2.4"><div class="logo" style="background:#512bd4;color:#fff">{{logo:dotnet}}</div><div class="nome">C#</div><div class="papel">Toda a lógica: livros, painel, destaque, jogador e automação.</div></div>
+      <div class="cartao tec" data-passo="3" data-atraso="3.9"><div class="logo" style="background:#fff;color:#111">{{logo:github}}</div><div class="nome">GitHub</div><div class="papel">Versionamento, branches e revisão por Pull Request.</div></div>
+    </div>
+    <div class="tambem" data-passo="3" data-atraso="5.2"><span>Também:</span><span class="chip">Input System 1.20</span><span class="chip">TextMeshPro</span><span class="chip">XR Plug-in Management 4.7</span><span class="chip">Unity Recorder 5.1</span><span class="chip">Video Player (MP4)</span></div>
+  </section>
+
+  <!-- ============ UNITY: PROJETO ============ -->
+  <section class="cena unity" id="c-unity_projeto" data-secao="Dentro da Unity">
+    <div class="editor">
+      <div class="u-menu"><span class="logo">{{logo:unity}}</span><span>File</span><span>Edit</span><span>Assets</span><span>GameObject</span><span>Component</span><span>Sebraelab</span><span>Window</span><span>Help</span><span class="titulo">Sebraelab · Sebraelab.unity · Android · Unity 6 (6000.0.58f2)</span></div>
+      <div class="u-barra"><span class="b">{{icone:play}}</span><span class="b">{{icone:pause}}</span><span class="b">{{icone:skip-forward}}</span></div>
+      <div class="u-area" style="grid-template-columns: 430px 1fr; grid-template-rows: 1fr 250px;">
+        <div class="u-janela" style="grid-row: 1 / 2;">
+          <div class="u-abas"><span class="aba on">{{icone:list-tree}} Hierarchy</span></div>
+          <div class="u-corpo" id="hier1">
+            <div class="linha-h" data-passo="2" data-atraso="0.2" style="--n:0"><span class="seta">▾</span>{{icone:box}} <b>Sebraelab</b></div>
+            <div class="linha-h" data-passo="2" data-atraso="0.6" style="--n:1">{{icone:sun}} Directional Light</div>
+            <div class="linha-h" data-passo="2" data-atraso="1.0" style="--n:1"><span class="seta">▸</span>{{icone:box}} <span class="azul">Cenario Sebraelab</span></div>
+            <div class="linha-h" data-passo="2" data-atraso="1.4" style="--n:1">{{icone:square}} Chao (teleporte)</div>
+            <div class="linha-h" data-passo="2" data-atraso="1.9" style="--n:1"><span class="seta">▾</span>{{icone:box}} Estante maranhense (livros na mesa)</div>
+            <div class="linha-h" data-passo="2" data-atraso="2.1" style="--n:2"><span class="seta">▸</span>{{icone:book}} Livro 1</div>
+            <div class="linha-h" data-passo="2" data-atraso="2.3" style="--n:2"><span class="seta">▸</span>{{icone:book}} Livro 2</div>
+            <div class="linha-h" data-passo="2" data-atraso="2.5" style="--n:2"><span class="seta">▸</span>{{icone:book}} Livro 3</div>
+            <div class="linha-h" data-passo="2" data-atraso="2.7" style="--n:2">{{icone:lamp}} Luz de destaque</div>
+            <div class="linha-h" data-passo="2" data-atraso="2.9" style="--n:2">{{icone:scan}} Zona de destaque</div>
+            <div class="linha-h" data-passo="2" data-atraso="3.3" style="--n:1"><span class="seta">▸</span>{{icone:grid-3x3}} Painel de azulejos (São Luís)</div>
+            <div class="linha-h" data-passo="2" data-atraso="3.9" style="--n:1"><span class="seta">▸</span>{{icone:glasses}} <span class="azul">XR Origin (XR Rig)</span></div>
+            <div class="linha-h" data-passo="2" data-atraso="4.3" style="--n:1">{{icone:mouse-pointer-click}} EventSystem</div>
+            <div class="linha-h" data-passo="2" data-atraso="4.7" style="--n:1"><span class="seta">▸</span>{{icone:keyboard}} Jogador PC (teste sem oculos)</div>
+          </div>
+        </div>
+        <div class="u-janela">
+          <div class="u-abas"><span class="aba on">{{icone:hash}} Scene</span><span class="aba">{{icone:gamepad-2}} Game</span></div>
+          <div class="u-cena"><img src="img/editor.jpg" alt="" data-passo="1" data-atraso="2.8"><div data-passo="1" data-sai="2:1.6" style="position:absolute;inset:0;background:rgba(32,32,32,.72)"></div><div data-passo="1" data-atraso="2.8" data-sai="2:1.6" style="position:absolute;left:24px;bottom:22px;font-size:17px;color:#ddd;background:rgba(0,0,0,.55);padding:6px 12px;border-radius:6px">Sebraelab3D / Sebrae Lab.fbx</div></div>
+        </div>
+        <div class="u-janela" style="grid-column: 1 / 3;">
+          <div class="u-abas"><span class="aba on">{{icone:folder}} Project</span><span class="aba">{{icone:terminal}} Console</span></div>
+          <div class="u-corpo" style="display:grid; grid-template-columns: 430px 1fr; padding: 0;">
+            <div style="padding-top: 6px; border-right: 1px solid var(--u-linha);">
+              <div class="linha-h" style="--n:0"><span class="seta">▾</span>{{icone:folder}} Assets</div>
+              <div class="linha-h" style="--n:1" data-on="1:5.6-2:0">{{icone:folder}} CulturaSaoLuis</div>
+              <div class="linha-h" style="--n:1" data-on="1:4.6-2:0">{{icone:folder}} Livros</div>
+              <div class="linha-h" style="--n:1">{{icone:folder}} Scenes</div>
+              <div class="linha-h" style="--n:1" data-on="1:2.0-2:0">{{icone:folder}} Scripts</div>
+              <div class="linha-h" style="--n:1" data-on="1:3.0-2:0">{{icone:folder}} Sebraelab3D</div>
+              <div class="linha-h" style="--n:1" data-on="1:3.9-2:0">{{icone:folder}} Videos</div>
+            </div>
+            <div style="padding: 8px 20px 0;">
+              <div style="display:flex; align-items:center; gap:10px; font-size:15.5px; color:#bbb; margin-bottom: 8px;"><span style="background:#1f1f1f;border:1px solid #111;border-radius:4px;padding:3px 10px;min-width:260px" class="mono">t:Script</span><span style="color:#888">Busca em Assets · 14 scripts C# do projeto</span></div>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 18px; align-content: start;" id="pastaScripts"><div class="arq">{{icone:file-code}}<span>LivroPopup.cs</span></div><div class="arq">{{icone:file-code}}<span>LivroData.cs</span></div><div class="arq">{{icone:file-code}}<span>EstandeZonaDestaque.cs</span></div><div class="arq">{{icone:file-code}}<span>PopupOlharParaJogador.cs</span></div><div class="arq">{{icone:file-code}}<span>DesktopPlayerController.cs</span></div><div class="arq">{{icone:file-code}}<span>DesktopInteracao.cs</span></div><div class="arq">{{icone:file-code}}<span>EntradaDesktop.cs</span></div><div class="arq">{{icone:file-code}}<span>DemonstracaoGuiada.cs</span></div><div class="arq">{{icone:file-code}}<span>XRICompat.cs</span></div><div class="arq">{{icone:file-code}}<span>SebraelabConfigurador.cs</span></div><div class="arq">{{icone:file-code}}<span>SebraelabMenu.cs</span></div><div class="arq">{{icone:file-code}}<span>SebraelabCulturaSaoLuis.cs</span></div><div class="arq">{{icone:file-code}}<span>SebraelabGravador.cs</span></div><div class="arq">{{icone:file-code}}<span>XRICompatEditor.cs</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ UNITY: INSPECTOR ============ -->
+  <section class="cena unity" id="c-unity_inspector" data-secao="Dentro da Unity">
+    <div class="editor">
+      <div class="u-menu"><span class="logo">{{logo:unity}}</span><span>File</span><span>Edit</span><span>Assets</span><span>GameObject</span><span>Component</span><span>Sebraelab</span><span>Window</span><span>Help</span><span class="titulo">Sebraelab · Sebraelab.unity · Android · Unity 6 (6000.0.58f2)</span></div>
+      <div class="u-barra"><span class="b">{{icone:play}}</span><span class="b">{{icone:pause}}</span><span class="b">{{icone:skip-forward}}</span></div>
+      <div class="u-area" style="grid-template-columns: 400px 1fr 640px;">
+        <div class="u-janela">
+          <div class="u-abas"><span class="aba on">{{icone:list-tree}} Hierarchy</span></div>
+          <div class="u-corpo">
+            <div class="linha-h" style="--n:0"><span class="seta">▾</span>{{icone:box}} <b>Sebraelab</b></div>
+            <div class="linha-h" style="--n:1"><span class="seta">▾</span>{{icone:box}} Estante maranhense (livros na mesa)</div>
+            <div class="linha-h" style="--n:2"><span class="seta">▸</span>{{icone:book}} Livro 1</div>
+            <div class="linha-h sel" style="--n:2"><span class="seta">▾</span>{{icone:book}} Livro 2</div>
+            <div class="linha-h" style="--n:3">{{icone:box}} Modelo</div>
+            <div class="linha-h" style="--n:3">{{icone:panels-top-left}} Popup</div>
+            <div class="linha-h" style="--n:2"><span class="seta">▸</span>{{icone:book}} Livro 3</div>
+            <div class="linha-h" style="--n:2">{{icone:lamp}} Luz de destaque</div>
+            <div class="linha-h" style="--n:2">{{icone:scan}} Zona de destaque</div>
+            <div class="linha-h" style="--n:1"><span class="seta">▸</span>{{icone:grid-3x3}} Painel de azulejos (São Luís)</div>
+            <div class="linha-h" style="--n:1"><span class="seta">▸</span>{{icone:glasses}} <span class="azul">XR Origin (XR Rig)</span></div>
+          </div>
+        </div>
+        <div class="u-janela">
+          <div class="u-abas"><span class="aba on">{{icone:hash}} Scene</span><span class="aba">{{icone:gamepad-2}} Game</span></div>
+          <div class="u-cena"><img src="img/estante.jpg" alt="" style="object-position: 40% 50%"></div>
+        </div>
+        <div class="u-janela" id="inspetor">
+          <div class="u-abas"><span class="aba on">{{icone:info}} Inspector</span></div>
+          <div class="u-corpo" style="padding-top: 0">
+            <div style="display:flex; align-items:center; gap:10px; padding: 10px 14px; border-bottom: 1px solid var(--u-linha);">{{icone:book}} <span class="u-campo" style="padding:0;display:block"><span class="v" style="width: 400px">Livro 2</span></span><span style="margin-left:auto;color:var(--u-fraco);font-size:16px">Static ☐</span></div>
+            <div class="u-cab">{{icone:move-3d}} Transform</div>
+            <div class="u-campo"><span>Position</span><span class="v">X −0.05 &nbsp; Y 0.57 &nbsp; Z 0.02</span></div>
+            <div class="u-comp" data-on="1:1.3-1:99"><div class="u-cab"><span class="ck">✓</span>{{icone:orbit}} Rigidbody</div>
+              <div class="u-campo"><span>Mass</span><span class="v">0.5</span></div>
+              <div class="u-campo"><span>Use Gravity</span><span class="v chk">✓</span></div>
+              <div class="u-campo"><span>Interpolate</span><span class="v">Interpolate</span></div>
+              <div class="u-campo"><span>Collision Detection</span><span class="v">Continuous Speculative</span></div></div>
+            <div class="u-comp" data-on="1:2.4-1:99"><div class="u-cab"><span class="ck">✓</span>{{icone:square-dashed}} Box Collider <span style="font-weight:500;color:var(--u-fraco);font-size:15px">(no filho “Modelo”)</span></div></div>
+            <div class="u-comp" data-on="1:3.6-1:99"><div class="u-cab"><span class="ck">✓</span>{{icone:grab}} XR Grab Interactable</div>
+              <div class="u-campo"><span>Movement Type</span><span class="v">Instantaneous</span></div>
+              <div class="u-campo"><span>Throw On Detach</span><span class="v chk">✓</span></div></div>
+            <div class="u-comp" data-on="1:5.6-1:99"><div class="u-cab"><span class="ck">✓</span>{{icone:file-code}} Livro Popup (Script)</div>
+              <div class="u-sec">Dados do livro (opcional)</div>
+              <div class="u-campo"><span>Dados</span><span class="v obj">Os Tambores de São Luís (Livro Data)</span></div>
+              <div class="u-sec">Quando mostrar o popup</div>
+              <div class="u-campo"><span>Quando Mostrar</span><span class="v">Ao aproximar a mão ou segurar ▾</span></div>
+              <div class="u-campo"><span>Atraso Para Fechar</span><span class="v">0.3</span></div>
+              <div class="u-sec">Referências da UI</div>
+              <div class="u-campo"><span>Canvas Popup</span><span class="v obj">Popup</span></div>
+              <div class="u-campo"><span>Video Player</span><span class="v obj">Video (Video Player)</span></div></div>
+          </div>
+          <div class="u-janela" id="inspetorDados" data-passo="2" data-atraso="0.4" style="position:absolute; inset: 0; z-index: 3;">
+            <div class="u-abas"><span class="aba on">{{icone:info}} Inspector</span></div>
+            <div class="u-corpo" style="padding-top: 0">
+              <div style="display:flex; align-items:center; gap:10px; padding: 12px 14px; border-bottom: 1px solid var(--u-linha); font-weight: 700;">{{icone:file-text}} Os Tambores de São Luís (Livro Data)</div>
+              <div style="padding: 6px 14px 10px; color: var(--u-fraco); font-size: 15.5px;" class="mono">Assets/Livros/Os Tambores de São Luís.asset</div>
+              <div class="u-campo"><span>Script</span><span class="v obj" style="color:#aaa">LivroData</span></div>
+              <div class="u-campo"><span>Titulo</span><span class="v">Os Tambores de São Luís</span></div>
+              <div class="u-campo"><span>Autor</span><span class="v">Josué Montello (1975)</span></div>
+              <div class="u-campo" style="align-items:start; padding-top: 4px"><span style="padding-top: 4px">Resumo</span><span class="v" style="white-space: normal; line-height: 1.4; min-height: 150px; align-items: start; padding: 8px">Ao atravessar as ruas de São Luís numa noite, o velho Damião relembra a própria vida, da escravidão à liberdade. O romance retrata a luta do povo negro no Maranhão, ao som dos tambores.</span></div>
+              <div class="u-campo"><span>Capa</span><span class="v obj" style="color:#999">None (Sprite)</span></div>
+              <div class="u-campo"><span>Video</span><span class="v obj">AzulejosSaoLuis (Video Clip)</span></div>
+              <div class="nota-cod" style="position: relative; right: auto; width: auto; margin: 22px 18px 0;" data-passo="2" data-atraso="3.0">{{icone:pencil}} Qualquer pessoa da equipe edita o texto aqui, <b>sem abrir o código</b>.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CÓDIGO ============ -->
+  <section class="cena unity" id="c-codigo" data-secao="Código">
+    <div class="codigo">
+      <div class="abas"><span class="aba">{{logo:dotnet}} LivroPopup.cs</span></div>
+      <div class="caminho mono">Assets/Scripts/Livros/LivroPopup.cs</div>
+      <pre id="codigo"></pre>
+    </div>
+    <div class="nota-cod" style="top: 452px" data-passo="1" data-atraso="1.6" data-sai="2:0"><b>Mão chegou perto ou pegou o livro?</b><br>O painel abre na hora.</div>
+    <div class="nota-cod" style="top: 640px" data-passo="2" data-atraso="0.8"><b>Mão saiu?</b> O fechamento é agendado para daqui a <b>0,3 s</b>. Se a mão voltar antes, o painel nem pisca.</div>
+  </section>
+
+  <!-- ============ AUTOMAÇÃO ============ -->
+  <section class="cena unity" id="c-automacao" data-secao="Automação na Unity">
+    <div class="editor">
+      <div class="u-menu" id="menuBarra"><span class="logo">{{logo:unity}}</span><span>File</span><span>Edit</span><span>Assets</span><span>GameObject</span><span>Component</span><span id="mSebraelab">Sebraelab</span><span>Window</span><span>Help</span><span class="titulo">Sebraelab · Unity 6 (6000.0.58f2)</span></div>
+      <div class="u-barra"><span class="b">{{icone:play}}</span><span class="b">{{icone:pause}}</span><span class="b">{{icone:skip-forward}}</span></div>
+      <div class="u-area" style="grid-template-columns: 1fr; grid-template-rows: 1fr 300px;">
+        <div class="u-janela"><div class="u-abas"><span class="aba on">{{icone:hash}} Scene</span></div><div class="u-cena"><img src="img/estante2.jpg" id="cenaAuto" alt="" style="opacity: .25"></div></div>
+        <div class="u-janela u-console">
+          <div class="u-abas"><span class="aba on">{{icone:terminal}} Console</span></div>
+          <div class="u-corpo" style="padding: 0">
+            <div class="log" data-passo="2" data-atraso="0.9">{{icone:info}} [Sebraelab] Instalando o URP (Universal Render Pipeline)...</div>
+            <div class="log" data-passo="2" data-atraso="1.8">{{icone:info}} [Sebraelab] Importando os Starter Assets do XR Interaction Toolkit...</div>
+            <div class="log" data-passo="2" data-atraso="2.7">{{icone:info}} [Sebraelab] Importando o TMP Essential Resources...</div>
+            <div class="log" data-passo="2" data-atraso="3.6">{{icone:info}} [Sebraelab] Configurando URP, OpenXR e Quest...</div>
+            <div class="log" data-passo="2" data-atraso="4.6">{{icone:info}} [Sebraelab] Criando a cena do Sebraelab...</div>
+            <div class="log" data-passo="2" data-atraso="5.4">{{icone:info}} [Sebraelab] Painel de azulejos fixado na parede atrás dos livros (1,5 m de largura).</div>
+            <div class="log" data-passo="2" data-atraso="5.9">{{icone:info}} [Sebraelab] Cena criada: Assets/Scenes/Sebraelab.unity</div>
+          </div>
+        </div>
+      </div>
+      <div class="menu-sub" id="menu1" style="left: 520px; top: 38px;">
+        <div class="it" id="it-config">Configurar projeto VR (automático)</div>
+        <div class="it" id="it-gravar">Gravar vídeo de demonstração</div>
+        <div class="sep"></div>
+        <div class="it" id="it-livros"><span>Livros</span><span>▸</span></div>
+        <div class="sep"></div>
+        <div class="it"><span>Cenário</span><span>▸</span></div>
+        <div class="sep"></div>
+        <div class="it"><span>Cultura de São Luís</span><span>▸</span></div>
+        <div class="it"><span>Jogador</span><span>▸</span></div>
+      </div>
+      <div class="menu-sub" id="menu2" style="left: 941px; top: 136px; min-width: 380px;"><div class="it on">Configurar livro selecionado</div></div>
+      <div class="dialogo" id="progresso" style="left: 520px; top: 230px; width: 640px;">
+        <div class="tit">Configurando o Sebraelab VR</div>
+        <div class="corpo"><span id="progTexto">Instalando o URP (Universal Render Pipeline)...</span><div class="barra-prog"><i id="progBarra"></i></div></div>
+      </div>
+      <div class="dialogo" id="pronto" style="left: 430px; top: 150px; width: 820px;">
+        <div class="tit">Sebraelab VR</div>
+        <div class="corpo">Pronto! A cena Assets/Scenes/Sebraelab.unity foi criada e está aberta.<br><br>• Dê Play: sem óculos, use WASD + mouse e aperte E num livro.<br>• Com o Quest conectado (Link/Air Link), a mesma cena roda em VR.<br>• Na mesa estão os livros da Estante maranhense (Assets/Livros), com o painel de azulejos de São Luís.<br><span class="botao-u">OK</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ARQUITETURA ============ -->
+  <section class="cena" id="c-arquitetura" data-secao="Arquitetura">
+    <div class="eyebrow" data-passo="1"><i class="az"></i>Arquitetura</div>
+    <h1 data-passo="1" data-atraso="0.2">Cada script tem <em>uma</em> responsabilidade</h1>
+    <div class="grupo" style="left:112px; top:300px; width:1030px; height:290px;" data-passo="1" data-atraso="0.9"><span class="rotulo">Livros</span></div>
+    <div class="no cs" style="left:150px; top:345px;" data-passo="1" data-atraso="1.1">LivroData<small>Título, autor, resumo, capa, vídeo</small></div>
+    <div class="no cs" style="left:560px; top:345px; border-color: rgba(76,201,240,.6)" data-passo="1" data-atraso="1.3">LivroPopup<small>Abre e fecha o painel do livro</small></div>
+    <div class="no cs" style="left:150px; top:480px;" data-passo="1" data-atraso="1.5">XR Grab Interactable<small>Pegar com a mão (XR Toolkit)</small></div>
+    <div class="no cs" style="left:620px; top:480px;" data-passo="1" data-atraso="1.7">PopupOlharParaJogador<small>Painel sempre virado para você</small></div>
+    <div class="grupo" style="left:1190px; top:300px; width:620px; height:290px;" data-passo="1" data-atraso="2.0"><span class="rotulo">Exposição e jogador</span></div>
+    <div class="no cs" style="left:1225px; top:345px;" data-passo="1" data-atraso="2.2">EstandeZonaDestaque<small>Acende a luz quando você chega</small></div>
+    <div class="no cs" style="left:1225px; top:480px;" data-passo="1" data-atraso="2.4">DesktopPlayerController<small>WASD + mouse (modo PC)</small></div>
+    <div class="grupo" style="left:112px; top:640px; width:1030px; height:150px;" data-passo="1" data-atraso="2.7"><span class="rotulo">Editor · automação</span></div>
+    <div class="no cs" style="left:140px; top:682px; font-size: 19px" data-passo="1" data-atraso="2.9">SebraelabConfigurador</div>
+    <div class="no cs" style="left:430px; top:682px; font-size: 19px" data-passo="1" data-atraso="3.0">SebraelabMenu</div>
+    <div class="no cs" style="left:640px; top:682px; font-size: 19px" data-passo="1" data-atraso="3.1">SebraelabCulturaSaoLuis</div>
+    <div class="no cs" style="left:940px; top:682px; font-size: 19px" data-passo="1" data-atraso="3.2">SebraelabGravador</div>
+    <div class="no futuro" style="left:1225px; top:660px; width: 585px;" data-passo="2" data-atraso="1.4">{{icone:puzzle}} Minijogo do livro <small style="color:#f3d79c">fase futura · ligado em <span class="mono">aoIniciarMinigame</span></small></div>
+    <svg class="lig" viewBox="0 0 1920 1080">
+      <defs><marker id="seta" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#4cc9f0"/></marker>
+            <marker id="seta2" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e9b44c"/></marker></defs>
+      <g data-passo="1" data-atraso="1.6" stroke="#4cc9f0" stroke-width="2.5" fill="none" opacity=".8">
+        <path d="M480 380 L550 380" marker-end="url(#seta)"/>
+        <path d="M455 515 L520 515 Q540 515 548 440" marker-end="url(#seta)"/>
+        <path d="M760 430 L760 470" marker-end="url(#seta)"/>
+      </g>
+      <path data-passo="2" data-atraso="0.6" d="M900 380 Q1180 380 1180 560 Q1180 690 1215 700" stroke="#e9b44c" stroke-width="3" stroke-dasharray="10 8" fill="none" marker-end="url(#seta2)"/>
+      <g data-passo="2" data-atraso="0.6"><rect x="950" y="600" width="250" height="40" rx="10" fill="#1d1a10" stroke="#e9b44c" stroke-opacity=".5"/><text x="1075" y="627" fill="#ffe2a6" font-family="JetBrains Mono" font-size="19" text-anchor="middle">IniciarMinigame()</text></g>
+    </svg>
+  </section>
+
+  <!-- ============ PROCESSO ============ -->
+  <section class="cena" id="c-processo" data-secao="Processo">
+    <div class="eyebrow" data-passo="1"><i class="az"></i>Processo</div>
+    <h1 data-passo="1" data-atraso="0.2">Versionado, revisado e documentado</h1>
+    <svg class="git" viewBox="0 0 1000 520" data-passo="1" data-atraso="1.0">
+      <line x1="40" y1="60" x2="40" y2="500" stroke="#3ccf91" stroke-width="5"/>
+      <g stroke="#4f7fe0" stroke-width="4" fill="none">
+        <path d="M40 470 Q110 470 110 430 L110 410 Q110 390 40 390"/>
+        <path d="M40 370 Q110 370 110 330 L110 310 Q110 290 40 290"/>
+        <path d="M40 270 Q110 270 110 230 L110 210 Q110 190 40 190"/>
+        <path d="M40 170 Q110 170 110 130 L110 110 Q110 90 40 90"/>
+      </g>
+      <g fill="#0a1430" stroke="#3ccf91" stroke-width="4"><circle cx="40" cy="390" r="11"/><circle cx="40" cy="290" r="11"/><circle cx="40" cy="190" r="11"/><circle cx="40" cy="90" r="11"/></g>
+      <g fill="#4f7fe0"><circle cx="110" cy="430" r="8"/><circle cx="110" cy="410" r="8"/><circle cx="110" cy="330" r="8"/><circle cx="110" cy="310" r="8"/><circle cx="110" cy="230" r="8"/><circle cx="110" cy="210" r="8"/><circle cx="110" cy="130" r="8"/><circle cx="110" cy="110" r="8"/></g>
+      <text x="62" y="40" fill="#8ff0c4" font-size="20" font-family="JetBrains Mono" font-weight="700">main</text>
+    </svg>
+    <div class="pr" style="left: 300px; top: 677px;" data-passo="1" data-atraso="2.0"><b>PR #1</b> Prepara o repositório para o projeto Unity</div>
+    <div class="pr" style="left: 300px; top: 577px;" data-passo="1" data-atraso="2.6"><b>PR #2</b> Projeto Unity 6 que se configura sozinho</div>
+    <div class="pr" style="left: 300px; top: 477px;" data-passo="1" data-atraso="3.2"><b>PR #3</b> Modelo 3D do Sebraelab e vídeo de apresentação</div>
+    <div class="pr" style="left: 300px; top: 377px;" data-passo="1" data-atraso="3.8"><b>PR #4</b> Gravação automática de um vídeo real do jogo</div>
+    <div class="pr" style="left: 300px; top: 290px; color: var(--fraco)" data-passo="1" data-atraso="4.6">{{icone:git-branch}} cada mudança: branch → Pull Request → revisão → merge</div>
+    <div class="cartao" style="position:absolute; left: 1180px; top: 300px; width: 630px; padding: 36px;" data-passo="2" data-atraso="0.6">
+      <div style="display:flex; gap: 18px; align-items: center"><span class="icone" style="background:#d97757;color:#fff">{{logo:claude}}</span><div class="titulo-c" style="margin:0">IA como assistente</div></div>
+      <div class="item ok" style="font-size: 23px; margin-top: 18px">{{icone:code}}<div>Gera e explica código, roteiros e documentação</div></div>
+      <div class="item ok" style="font-size: 23px">{{icone:check-check}}<div>Compilação conferida em 12 combinações de pacotes</div></div>
+      <div class="item ok" style="font-size: 23px; border: 0">{{icone:users}}<div>Toda mudança passa por Pull Request e é revisada pela equipe</div></div>
+    </div>
+  </section>
+
+  <!-- ============ ROADMAP ============ -->
+  <section class="cena" id="c-roadmap" data-secao="Status e próximos passos">
+    <div class="eyebrow" data-passo="1"><i class="az"></i>Status</div>
+    <h1 data-passo="1" data-atraso="0.2">Onde estamos e para onde vamos</h1>
+    <div class="colunas">
+      <div class="cartao" data-passo="1" data-atraso="0.8">
+        <div class="cab"><span class="icone c-verde">{{icone:circle-check-big}}</span>Entregue</div>
+        <div class="item ok" data-passo="1" data-atraso="2.2">{{icone:check}}<div>Cenário completo do Sebraelab<small>colisão + piso de teleporte</small></div></div>
+        <div class="item ok" data-passo="1" data-atraso="3.6">{{icone:check}}<div>Interações com os livros<small>aproximar, pegar, girar, soltar · painel com vídeo</small></div></div>
+        <div class="item ok" data-passo="1" data-atraso="5.1">{{icone:check}}<div>Modo de teste no computador<small>WASD + mouse, tecla E</small></div></div>
+        <div class="item ok" data-passo="1" data-atraso="6.6">{{icone:check}}<div>Configuração automática<small>menu Sebraelab: um clique monta tudo</small></div></div>
+        <div class="item ok" data-passo="1" data-atraso="7.4" style="border:0">{{icone:check}}<div>Estante maranhense<small>autores de São Luís + painel de azulejos</small></div></div>
+      </div>
+      <div class="cartao" data-passo="2" data-atraso="0.3">
+        <div class="cab"><span class="icone c-ouro">{{icone:route}}</span>Próximos passos</div>
+        <div class="item prox" data-passo="2" data-atraso="1.6">{{icone:book-plus}}<div>Cadastrar os livros reais da exposição<small>capas, resumos e vídeos (assets “Dados do Livro”)</small></div></div>
+        <div class="item prox" data-passo="2" data-atraso="3.4">{{icone:glasses}}<div>Testar e otimizar no Meta Quest<small>desempenho, conforto e controles no óculos</small></div></div>
+        <div class="item prox" data-passo="2" data-atraso="5.6" style="border:0">{{icone:puzzle}}<div>Criar os minijogos<small>um por livro, ligados ao IniciarMinigame()</small></div></div>
+      </div>
+    </div>
+  </section>
+
+  <svg id="cursor" viewBox="0 0 24 24"><path d="M3 2 L3 20 L8 15 L11.5 22 L14.5 20.6 L11 13.8 L18 13.8 Z" fill="#fff" stroke="#000" stroke-width="1.3" stroke-linejoin="round"/></svg>
+  <div id="legenda"></div>
+  <div id="fade"></div>
+</div>
+
+<script type="module">
+import { desenharAzulejo } from './azulejo.js';
+const realce = await (await fetch('./codigo_realce.json')).json(); // gerado por realcar.js (highlight.js no Node)
+
+// ---------- azulejo como imagem de fundo ----------
+const url = desenharAzulejo(document.createElement('canvas'), 256, 4).toDataURL('image/png');
+for (const id of ['padrao', 'faixa']) document.getElementById(id).style.backgroundImage = `url(${url})`;
+document.querySelectorAll('.az').forEach(e => e.style.backgroundImage = `url(${url})`);
+
+// ---------- código real (Assets/Scripts/Livros/LivroPopup.cs) ----------
+const TRECHOS = [
+  [131, ['private void Update()', '{', '    // O fechamento é feito aqui, com atraso, e não direto no evento de saída:', '    // assim o popup não pisca quando a mão passa rápido pela borda do livro', '    // e continua aberto se outra mão/raio ainda estiver no livro.', '    if (horaDeFechar < 0f || Time.time < horaDeFechar) return;', '', '    horaDeFechar = -1f;', '    if (!DeveFicarAberto()) Fechar();', '}']],
+  [153, ['private void AoAproximarMao(HoverEnterEventArgs args)', '{', '    if (UsaHover) Abrir();', '}', '', 'private void AoAfastarMao(HoverExitEventArgs args) => AgendarFechamento();', '', 'private void AoSegurarLivro(SelectEnterEventArgs args)', '{', '    if (UsaSelect) Abrir();', '}', '', 'private void AoSoltarLivro(SelectExitEventArgs args) => AgendarFechamento();']],
+  [242, ['private void AgendarFechamento()', '{', '    if (PopupAberto) horaDeFechar = Time.time + atrasoParaFechar;', '}']],
+];
+const DESTAQUE = { 1: [153, 154, 155, 156, 160, 161, 162, 163], 2: [158, 165, 242, 243, 244, 245, 136, 138, 139] };
+const pre = document.getElementById('codigo'); let html = '';
+TRECHOS.forEach(([ini, linhas], k) => {
+  if (k > 0) html += `<div class="ln gap"><span class="n">⋯</span><span class="c"></span></div>`;
+  linhas.forEach((l, i) => { const n = ini + i; html += `<div class="ln" data-l="${n}"><span class="n">${n}</span><span class="c">${l ? realce['    ' + l] : ' '}</span></div>`; });
+});
+pre.innerHTML = html;
+
+// ---------- motor de animação ----------
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v)), suave = p => p * p * (3 - 2 * p);
+const prog = (t, a, b) => b <= a ? (t >= b ? 1 : 0) : suave(clamp((t - a) / (b - a), 0, 1));
+const ORDEM = ['proposta', 'pilares', 'sao_luis', 'tecnologias', 'unity_projeto', 'unity_inspector', 'codigo', 'automacao', 'arquitetura', 'processo', 'roadmap'];
+let dados = null;
+const inicio = n => { const s = dados.segmentos.find(x => x.passo === n); return s ? s.inicio : (n <= 1 ? 0 : 999); };
+const tempo = txt => { const [p, a] = txt.split(':'); return inicio(+p) + (+a || 0); };
+const el = id => document.getElementById(id);
+function mover(px, py) { const c = el('cursor'); c.style.left = px + 'px'; c.style.top = py + 'px'; }
+const ESPECIAIS = {
+  codigo(t) {
+    const p1 = tempo('1:1.4'), p2 = tempo('2:0.5');
+    document.querySelectorAll('#codigo .ln').forEach(l => { const n = +l.dataset.l; l.classList.toggle('on', (t >= p1 && t < p2 && DESTAQUE[1].includes(n)) || (t >= p2 && DESTAQUE[2].includes(n))); });
+  },
+  automacao(t) {
+    // passo 1: abre o menu Sebraelab; passo 2: clica em Configurar (progresso + console + diálogo); passo 3: livros e gravação
+    const c = el('cursor'); c.classList.add('ativo');
+    const a1 = tempo('1:1.2'), a2 = tempo('2:0.0'), a3 = tempo('3:0.3');
+    const ed = { x: 96, y: 124 }; // canto do editor
+    const pontos = [[0, 1000, 800], [a1 - 0.9, 1000, 800], [a1, ed.x + 560, ed.y + 20], [a2 - 0.6, ed.x + 560, ed.y + 20], [a2 - 0.1, ed.x + 700, ed.y + 60],
+      [a3 - 0.5, ed.x + 700, ed.y + 60], [a3, ed.x + 560, ed.y + 20], [a3 + 1.0, ed.x + 640, ed.y + 160], [a3 + 2.2, ed.x + 1120, ed.y + 156], [a3 + 4.6, ed.x + 1120, ed.y + 156], [a3 + 5.4, ed.x + 690, ed.y + 100], [99, ed.x + 690, ed.y + 100]];
+    let i = 0; while (i < pontos.length - 2 && t > pontos[i + 1][0]) i++;
+    const [ta, xa, ya] = pontos[i], [tb, xb, yb] = pontos[i + 1], k = prog(t, ta, tb);
+    mover(xa + (xb - xa) * k, ya + (yb - ya) * k);
+    const menuAberto = (t >= a1 && t < a2 - 0.05) || (t >= a3 + 0.1);
+    el('menu1').style.display = menuAberto ? 'block' : 'none';
+    el('mSebraelab').classList.toggle('on', menuAberto);
+    el('it-config').classList.toggle('on', t >= a2 - 0.7 && t < a2);
+    el('it-livros').classList.toggle('on', t >= a3 + 1.0 && t < a3 + 4.8);
+    el('menu2').style.display = t >= a3 + 1.4 && t < a3 + 4.8 ? 'block' : 'none';
+    el('it-gravar').classList.toggle('on', t >= a3 + 5.2);
+    const pIni = a2 + 0.2, pFim = a2 + 6.3;
+    el('progresso').style.display = t >= pIni && t < pFim ? 'block' : 'none';
+    const msgs = ['Instalando o URP (Universal Render Pipeline)...', 'Importando os Starter Assets do XR Interaction Toolkit...', 'Importando o TMP Essential Resources...', 'Configurando URP, OpenXR e Quest...', 'Criando a cena do Sebraelab...'];
+    const kk = clamp((t - pIni) / (pFim - pIni), 0, 0.999); el('progTexto').textContent = msgs[Math.floor(kk * msgs.length)];
+    el('progBarra').style.width = (kk * 100) + '%';
+    el('pronto').style.display = t >= pFim && t < a3 - 0.2 ? 'block' : 'none';
+    el('cenaAuto').style.opacity = 0.25 + 0.75 * prog(t, pFim - 0.6, pFim);
+  },
+};
+
+window.desenhar = function (d, t) {
+  dados = d;
+  const id = d.id;
+  document.body.classList.toggle('deck', !!d.deck);
+  document.querySelectorAll('.cena').forEach(c => c.classList.toggle('ativa', c.id === 'c-' + id));
+  const cena = el('c-' + id);
+  document.body.classList.toggle('unity', cena.classList.contains('unity'));
+  el('cursor').classList.remove('ativo');
+  el('secao').textContent = cena.dataset.secao;
+  el('contador').textContent = String(ORDEM.indexOf(id) + 1).padStart(2, '0') + ' / ' + String(ORDEM.length).padStart(2, '0');
+  cena.querySelectorAll('[data-passo]').forEach(e => {
+    const ti = inicio(+e.dataset.passo) + (+e.dataset.atraso || 0);
+    let p = prog(t, ti, ti + 0.55);
+    if (e.dataset.sai) { const ts = tempo(e.dataset.sai); p *= 1 - prog(t, ts, ts + 0.45); }
+    e.style.opacity = p; e.style.transform = e.tagName === 'g' || e.tagName === 'path' || e.tagName === 'svg' ? '' : `translateY(${(1 - p) * 22}px)`;
+    e.style.visibility = p <= 0.001 ? 'hidden' : 'visible';
+  });
+  cena.querySelectorAll('[data-on]').forEach(e => { const [a, b] = e.dataset.on.split('-'); e.classList.toggle('on', t >= tempo(a) && t < tempo(b)); });
+  cena.querySelectorAll('img.zoom').forEach(i => i.style.transform = `scale(${1 + 0.06 * clamp(t / d.duracao, 0, 1)})`);
+  ESPECIAIS[id]?.(t);
+  // legenda e fade
+  let atual = null; d.segmentos.forEach(s => { if (t >= s.inicio) atual = s; });
+  const leg = el('legenda'); if (atual && t < d.duracao - 0.3) { leg.textContent = atual.legenda; leg.style.display = 'block'; } else leg.style.display = 'none';
+  let f = 0; if (t < 0.35) f = 1 - t / 0.35; else if (t > d.duracao - 0.35) f = (t - (d.duracao - 0.35)) / 0.35;
+  el('fade').style.opacity = clamp(f, 0, 1);
+};
+Promise.all([...document.images].map(i => i.complete ? 1 : new Promise(r => { i.onload = i.onerror = r; }))).then(() => document.fonts.ready).then(() => { window.pronto = true; });
+</script>
+</body>
+</html>

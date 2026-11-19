@@ -1,0 +1,10 @@
+<!doctype html><html><head><style>@import url('./node_modules/@fontsource/inter/index.css');@import url('./node_modules/@fontsource/inter/500.css');@import url('./node_modules/@fontsource/inter/800.css');body{margin:0}</style></head>
+<body><canvas id="c" width="640" height="360"></canvas>
+<script type="module">
+import { desenharAzulejo } from './azulejo.js';
+import { desenharClipe } from './clipe.js';
+const az = desenharAzulejo(document.createElement('canvas'), 256, 4);
+const g = document.getElementById('c').getContext('2d');
+window.quadro = t => desenharClipe(g, 640, 360, t, az);
+document.fonts.load('800 20px Inter').then(() => document.fonts.load('500 20px Inter')).then(() => { window.quadro(0); window.ok = true; });
+</script></body></html>

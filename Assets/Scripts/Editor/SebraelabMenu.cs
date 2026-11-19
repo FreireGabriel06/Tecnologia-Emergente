@@ -165,7 +165,7 @@ public static class SebraelabMenu
         var fundo = painel.AddComponent<Image>();
         fundo.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>(SpriteUI);
         fundo.type = Image.Type.Sliced;
-        fundo.color = new Color(0.07f, 0.09f, 0.13f, 0.92f);
+        fundo.color = new Color(0.07f, 0.09f, 0.13f, 0.97f); // quase opaco: o texto fica legível na frente de qualquer parede
         fundo.raycastTarget = false;
 
         var layout = painel.AddComponent<VerticalLayoutGroup>();
@@ -180,6 +180,18 @@ public static class SebraelabMenu
         painel.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
         // ---- Conteúdo ----
+        // Faixa de azulejos portugueses no topo (identidade visual de São Luís do Maranhão).
+        var texturaAzulejo = SebraelabCulturaSaoLuis.TexturaAzulejo();
+        if (texturaAzulejo != null)
+        {
+            const float alturaFaixa = 34f;
+            var faixa = CriarObjetoUI("Faixa de azulejos", painel.transform).AddComponent<RawImage>();
+            faixa.texture = texturaAzulejo;
+            faixa.uvRect = new Rect(0f, 0f, (LarguraPopup - 2f * Margem) / alturaFaixa, 1f); // repete um azulejo a cada 34 mm
+            faixa.raycastTarget = false;
+            faixa.gameObject.AddComponent<LayoutElement>().preferredHeight = alturaFaixa;
+        }
+
         var titulo = CriarTexto("Titulo", painel.transform, livro.name, 34f, FontStyles.Bold,
                                 TextAlignmentOptions.Center, Color.white);
         var autor = CriarTexto("Autor", painel.transform, "Autor(a)", 22f, FontStyles.Italic,
