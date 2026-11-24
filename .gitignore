@@ -12,6 +12,9 @@
 /[Mm]emoryCaptures/
 /[Rr]ecordings/
 
+# Vídeo e logs gerados pelo FAZER_TUDO.bat
+/[Gg]ravacoes/
+
 # Os .meta dos assets SEMPRE devem ser commitados
 !/[Aa]ssets/**/*.meta
 

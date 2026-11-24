@@ -97,8 +97,8 @@ Os scripts da pasta `Player/` servem para testar o cenário no PC, sem óculos.
 3. Clone o repositório e abra a pasta pelo Unity Hub (*Add > Add project from disk*).
 4. **Primeira vez (uma pessoa só):** quando aparecer a janela *Sebraelab VR*, clique em **Configurar agora** e espere o
    *Pronto!*. Depois faça commit e push de tudo. Detalhes no [passo 1 do guia](Docs/CONFIGURACAO_UNITY.md#1-abrir-e-configurar-o-projeto-uma-pessoa-só-na-primeira-vez).
-   **Atalho no Windows:** feche a Unity e dê dois cliques em **`FAZER_TUDO.bat`**: ele configura o projeto sozinho e
-   ainda grava um vídeo real do jogo em `Gravacoes/Sebraelab_demo.mp4`.
+   **Atalho no Windows:** feche a Unity e dê dois cliques em **`FAZER_TUDO.bat`**: ele atualiza o projeto (mesmo se a
+   pasta veio de um ZIP), configura tudo sozinho e ainda grava um vídeo real do jogo em `Gravacoes/Sebraelab_demo.mp4`.
 5. Abra `Assets/Scenes/Sebraelab.unity` e dê **Play** (sem óculos: WASD + mouse; mire num livro escondido e aperte **E** para pegar; no hub, mire nos botões do menu e aperte **E**).
 
 ## Regras do Git no grupo
