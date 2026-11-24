@@ -12,7 +12,9 @@ using UnityEngine.XR.Interaction.Toolkit.UI;
 
 /// <summary>
 /// Menu "Sebraelab" na barra do Unity, com atalhos para os passos repetitivos do guia:
-///   Sebraelab > Livros  > Configurar livro selecionado
+///   Sebraelab > Livros  > Transformar em livro escondido (coleta)   (SebraelabColeta.cs)
+///   Sebraelab > Livros  > Configurar livro com popup (sem coleta)
+///   Sebraelab > Coleta de livros > Montar hub e livros escondidos na cena aberta   (SebraelabColeta.cs)
 ///   Sebraelab > Cenário > Colocar modelo do Sebraelab na cena
 ///   Sebraelab > Cenário > Adicionar colliders no cenário selecionado
 ///   Sebraelab > Jogador > Criar jogador de teste (teclado e mouse)
@@ -39,7 +41,7 @@ public static class SebraelabMenu
     // Livros
     // =====================================================================
 
-    [MenuItem("Sebraelab/Livros/Configurar livro selecionado", false, 0)]
+    [MenuItem("Sebraelab/Livros/Configurar livro com popup (sem coleta)", false, 0)]
     private static void ConfigurarLivrosSelecionados()
     {
         Undo.SetCurrentGroupName("Configurar livro (Sebraelab)");
@@ -56,7 +58,7 @@ public static class SebraelabMenu
         }
     }
 
-    [MenuItem("Sebraelab/Livros/Configurar livro selecionado", true)]
+    [MenuItem("Sebraelab/Livros/Configurar livro com popup (sem coleta)", true)]
     private static bool ValidarLivrosSelecionados() => Selection.gameObjects.Length > 0;
 
     internal static LivroPopup ConfigurarLivro(GameObject livro)
