@@ -41,6 +41,12 @@ using InfoPacote = UnityEditor.PackageManager.PackageInfo;
 public static class SebraelabConfigurador
 {
     internal const string CaminhoCena = "Assets/Scenes/Sebraelab.unity";
+
+    /// <summary>
+    /// Versão da cena que este configurador cria (1 = livros com popup, 2 = coleta de livros, 3 = coleta + visual novo).
+    /// Uma cena mais antiga é recriada; a antiga vai para Assets/Scenes/Antigas.
+    /// </summary>
+    internal const int VersaoDaCena = 3;
     private const string PastaConfiguracoes = "Assets/Settings";
     private const string PastaMateriais = "Assets/Materials";
 
@@ -186,6 +192,7 @@ public static class SebraelabConfigurador
         Tentar("OpenXR", ConfigurarXR, avisos);
         Tentar("camada de teleporte", NomearCamadaTeleporte, avisos);
         Tentar("configurações do Quest", ConfigurarPlayer, avisos);
+        Tentar("sombras e HDR do URP", SebraelabVisual.AjustarURP, avisos);
 
         Progresso("Criando a cena do Sebraelab...", 0.85f);
         if (!CriarCena()) avisos.Add("cena (não foi criada porque a cena aberta não foi salva)");
@@ -446,9 +453,20 @@ public static class SebraelabConfigurador
 
         if (File.Exists(CaminhoCena))
         {
-            Debug.Log($"[Sebraelab] A cena {CaminhoCena} já existe; ela não foi recriada.");
             EditorSceneManager.OpenScene(CaminhoCena);
-            return true;
+            int versao = VersaoDaCenaAberta();
+            if (versao >= VersaoDaCena)
+            {
+                Debug.Log($"[Sebraelab] A cena {CaminhoCena} já existe e está atualizada (v{versao}); ela não foi recriada.");
+                return true;
+            }
+
+            bool recriar = SebraelabAutomatico.Ativo || EditorUtility.DisplayDialog("Sebraelab",
+                $"A cena {CaminhoCena} foi criada por uma versão antiga do configurador (v{versao}).\n\n" +
+                $"Recriar com a versão nova (v{VersaoDaCena}: livros escondidos, hub e visual novo)? " +
+                "A cena antiga fica guardada em Assets/Scenes/Antigas.", "Recriar", "Manter a antiga");
+            if (!recriar) return true;
+            GuardarCenaAntiga(versao);
         }
 
         var cena = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
@@ -456,6 +474,12 @@ public static class SebraelabConfigurador
         // A câmera padrão sai: quem tem câmera é o XR Origin (VR) e o jogador de teste (PC).
         var cameraPadrao = Camera.main;
         if (cameraPadrao != null) UnityEngine.Object.DestroyImmediate(cameraPadrao.gameObject);
+
+        // Grupos da Hierarchy (a cena fica organizada).
+        var ambiente = new GameObject("Ambiente");
+        var iluminacao = new GameObject("Iluminação");
+        var coleta = new GameObject("Coleta de livros");
+        var jogadores = new GameObject("Jogadores");
 
         var pontoInicial = Vector3.zero;
         var rotacaoInicial = Quaternion.identity;
@@ -466,7 +490,7 @@ public static class SebraelabConfigurador
         {
             var cenario = SebraelabMenu.ColocarModeloNaCena(modelo);
             var piso = SebraelabMenu.LimitesDoPiso(cenario);
-            IluminarInterior();
+            SebraelabVisual.Iluminar(SebraelabMenu.CalcularLimites(cenario));
 
             var mesa = SebraelabMenu.EncontrarMesa(cenario);
             if (mesa != null)
@@ -493,15 +517,17 @@ public static class SebraelabConfigurador
         {
             SebraelabMenu.CriarChaoTeleporte(Vector3.zero, new Vector2(30f, 30f), visivel: true,
                                              material: CriarMaterial("Chao_Exemplo", new Color(0.55f, 0.57f, 0.6f)));
+            SebraelabVisual.Iluminar(new Bounds(Vector3.up * 1.5f, new Vector3(30f, 3f, 30f)));
             CriarHubDeExemplo(new Vector3(0f, 0f, 2.5f), Quaternion.identity, null);
         }
 
         // Jogador VR
         var caminhoXROrigin = CaminhoPrefabXROrigin();
+        GameObject xrOrigin = null;
         if (caminhoXROrigin != null)
         {
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(caminhoXROrigin);
-            var xrOrigin = (GameObject)PrefabUtility.InstantiatePrefab(prefab, cena);
+            xrOrigin = (GameObject)PrefabUtility.InstantiatePrefab(prefab, cena);
             xrOrigin.transform.SetPositionAndRotation(pontoInicial, rotacaoInicial);
         }
         else
@@ -510,11 +536,29 @@ public static class SebraelabConfigurador
         }
 
         // EventSystem que funciona com os controles VR (e com o mouse).
-        new GameObject("EventSystem", typeof(EventSystem), typeof(XRUIInputModule));
+        var eventSystem = new GameObject("EventSystem", typeof(EventSystem), typeof(XRUIInputModule));
 
         // Jogador de teste do PC (some sozinho quando há headset). Começa onde está o XR Origin.
         var jogadorPC = SebraelabMenu.CriarJogadorDesktop();
         if (caminhoXROrigin == null) jogadorPC.transform.SetPositionAndRotation(pontoInicial, rotacaoInicial);
+
+        // Acabamento: pós-processamento nas câmeras (desligado no Quest) e a cena organizada em grupos.
+        SebraelabVisual.PrepararCameras();
+        var posProcessamento = SebraelabVisual.CriarPosProcessamento();
+        Agrupar(ambiente, Find("Cenario Sebraelab"), Find(SebraelabMenu.NomeChaoTeleporte), Find("Mesa do hub (exemplo)"));
+        Agrupar(iluminacao, Find("Sol"), Find("Reflexos do salão"), posProcessamento);
+        Agrupar(coleta, Find(SebraelabColeta.NomeHub), Find(SebraelabColeta.NomeEsconderijos), Find(SebraelabColeta.NomeLivros));
+        Agrupar(jogadores, xrOrigin, eventSystem, jogadorPC);
+
+        var otimizar = new SerializedObject(iluminacao.AddComponent<OtimizarParaQuest>());
+        var desligar = otimizar.FindProperty("desligarNoQuest");
+        desligar.arraySize = posProcessamento != null ? 1 : 0;
+        if (posProcessamento != null) desligar.GetArrayElementAtIndex(0).objectReferenceValue = posProcessamento;
+        otimizar.ApplyModifiedPropertiesWithoutUndo();
+
+        var info = new SerializedObject(ambiente.AddComponent<InfoDaCena>());
+        info.FindProperty("versao").intValue = VersaoDaCena;
+        info.ApplyModifiedPropertiesWithoutUndo();
 
         CriarPasta(Path.GetDirectoryName(CaminhoCena).Replace('\\', '/'));
         EditorSceneManager.SaveScene(cena, CaminhoCena);
@@ -523,19 +567,30 @@ public static class SebraelabConfigurador
         return true;
     }
 
-    /// <summary>
-    /// A sala tem teto, então a luz do "sol" padrão ficaria toda em sombra. Sem sombras ela atravessa o teto e ilumina
-    /// o interior por igual (também é mais leve para o Quest), e a luz ambiente fica mais clara.
-    /// </summary>
-    private static void IluminarInterior()
+    /// <summary>Versão da cena aberta (1 = sem marcador de versão: cena feita antes das versões).</summary>
+    private static int VersaoDaCenaAberta()
     {
-        foreach (var luz in UnityEngine.Object.FindObjectsByType<Light>(FindObjectsSortMode.None))
-            if (luz.type == LightType.Directional) luz.shadows = LightShadows.None;
+        var info = UnityEngine.Object.FindFirstObjectByType<InfoDaCena>(FindObjectsInactive.Include);
+        return info != null ? info.Versao : 1;
+    }
 
-        RenderSettings.ambientMode = AmbientMode.Trilight;
-        RenderSettings.ambientSkyColor = new Color(0.75f, 0.78f, 0.82f);
-        RenderSettings.ambientEquatorColor = new Color(0.55f, 0.56f, 0.58f);
-        RenderSettings.ambientGroundColor = new Color(0.32f, 0.31f, 0.3f);
+    /// <summary>Move a cena atual para Assets/Scenes/Antigas antes de criar a nova.</summary>
+    private static void GuardarCenaAntiga(int versao)
+    {
+        EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single); // fecha a cena antes de mover
+        CriarPasta("Assets/Scenes/Antigas");
+        string destino = AssetDatabase.GenerateUniqueAssetPath($"Assets/Scenes/Antigas/Sebraelab_v{versao}_{DateTime.Now:yyyyMMdd_HHmm}.unity");
+        string erro = AssetDatabase.MoveAsset(CaminhoCena, destino);
+        if (string.IsNullOrEmpty(erro)) Debug.Log($"[Sebraelab] Cena antiga guardada em {destino}.");
+        else throw new InvalidOperationException("Não deu para guardar a cena antiga: " + erro);
+    }
+
+    private static GameObject Find(string nome) => GameObject.Find(nome);
+
+    private static void Agrupar(GameObject grupo, params GameObject[] objetos)
+    {
+        foreach (var objeto in objetos)
+            if (objeto != null && objeto != grupo) objeto.transform.SetParent(grupo.transform, true);
     }
 
     /// <summary>
@@ -566,7 +621,7 @@ public static class SebraelabConfigurador
 
     private static void AdicionarCenaAoBuild(string caminho)
     {
-        var cenas = EditorBuildSettings.scenes.Where(c => c.path != caminho).ToList();
+        var cenas = EditorBuildSettings.scenes.Where(c => c.path != caminho && !c.path.StartsWith("Assets/Scenes/Antigas/")).ToList();
         cenas.Insert(0, new EditorBuildSettingsScene(caminho, true));
         EditorBuildSettings.scenes = cenas.ToArray();
     }

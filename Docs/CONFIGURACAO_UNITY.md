@@ -86,17 +86,26 @@ são **3 livros**.
    para o lugar dele na mesa do hub. Quem cuida disso é um só script, o `GerenciadorColeta` (hub central).
 4. No **menu do hub**, os livros ainda não encontrados aparecem como **???**. Escolha um livro encontrado para ler a
    **introdução da história**, com o vídeo do livro. Pegar o livro em cima da mesa do hub também abre a introdução dele.
-5. O botão **Desafios** já está no menu, mas **ainda não tem função**: ele mostra *"Os desafios deste livro chegam em
+5. **Ajuda para achar os livros:** um *detector* toca um "ping" baixinho que fica mais rápido e mais agudo quando o
+   jogador chega perto de um livro escondido. E, se ele passar mais de 75 s sem achar nada, o menu do hub passa a dar
+   uma **dica** no lugar de "Ainda não encontrado" (ex.: *"Dica: em cima da bancada da cozinha"*). Os dois se ajustam no
+   `GerenciadorColeta` (**Detector De Livros**, **Segundos Para Dica**); as dicas ficam no campo **Dica** de cada esconderijo.
+6. Quando o último livro é encontrado: comemoração no hub (brilho e luz azul), o tempo total da partida e o evento
+   **Ao Encontrar Todos**. Uma música ambiente calma (gerada por código) toca baixinho o tempo todo.
+7. O botão **Desafios** já está no menu, mas **ainda não tem função**: ele mostra *"Os desafios deste livro chegam em
    breve!"* e dispara o evento **Ao Abrir Desafios** do `HubLivrosMenu` (ver passo 8).
 
 **O que está na cena:**
 
 | Objeto | O que é |
 | --- | --- |
-| `Hub dos livros` | `GerenciadorColeta` (contagem, sorteio, aviso, sons), os 3 **Lugar do livro N** na mesa, **Luz do hub**, **Zona do hub** e o **Menu do hub** (Canvas em World Space) |
-| `Painel de azulejos (São Luís)` | Parede de azulejos com a placa *Estante maranhense*. O menu fica em cima dela |
-| `Esconderijos dos livros` | Um objeto **Esconderijo de Livro** (`PontoDeLivro`) para cada lugar possível |
-| `Livros escondidos` | Os 3 livros: `XR Grab Interactable` + `Rigidbody` parado + `LivroColetavel`, com luz e som |
+| **Ambiente** | O modelo do Sebraelab (`Cenario Sebraelab`) e o `Chao (teleporte)` |
+| **Iluminação** | `Sol` (sombras suaves), `Reflexos do salão` (reflection probe) e `Pós-processamento` (desligado no Quest pelo `OtimizarParaQuest`) |
+| **Coleta de livros** › `Hub dos livros` | `GerenciadorColeta` (contagem, sorteio, aviso, sons, dicas, detector), os 3 **Lugar do livro N** (suporte de madeira e um "?" até o livro chegar), **Luz do hub**, **Luz do painel**, **Zona do hub**, partículas e o **Menu do hub** (Canvas em World Space) |
+| **Coleta de livros** › `Hub dos livros` › `Painel de azulejos (São Luís)` | Parede de azulejos com a placa *Estante maranhense*. O menu fica em cima dela |
+| **Coleta de livros** › `Esconderijos dos livros` | Um objeto **Esconderijo de Livro** (`PontoDeLivro`) para cada lugar possível, com a dica |
+| **Coleta de livros** › `Livros escondidos` | Os 3 livros: `XR Grab Interactable` + `Rigidbody` parado + `LivroColetavel`, com título na capa, luz, brilhinhos e som |
+| **Jogadores** | `XR Origin (XR Rig)`, `EventSystem` e o `Jogador PC (teste sem oculos)` |
 
 **Trocar o conteúdo:** os textos ficam nos assets *Dados do Livro* em `Assets/Livros` (`O Mulato`, `Os Tambores de São
 Luís`, `Poema Sujo`). O campo **Resumo** é a **introdução da história** que aparece no menu. Capa e vídeo também.
@@ -110,8 +119,10 @@ lista do hub. Preencha **Dados** e **Cor** no `LivroColetavel`.
 móvel na Scene View e usar **Sebraelab > Coleta de livros > Criar esconderijo onde a Scene View está olhando**. Para os
 livros ficarem sempre no mesmo lugar, desmarque **Sortear Esconderijos** no `GerenciadorColeta` e posicione os livros.
 
-**Cena criada antes desta versão:** abra-a e use **Sebraelab > Coleta de livros > Montar hub e livros escondidos na cena
-aberta**. A estante antiga (livros com popup na mesa) é desligada.
+**Cena criada por uma versão antiga do configurador:** rode de novo **Sebraelab > Configurar projeto VR (automático)** (ou o
+`FAZER_TUDO.bat`). Ele percebe que a cena é antiga, guarda a antiga em `Assets/Scenes/Antigas` e cria a nova. A versão fica no
+componente `InfoDaCena` do grupo **Ambiente**. Também dá para só adicionar a coleta numa cena com **Sebraelab > Coleta de
+livros > Montar hub e livros escondidos na cena aberta**.
 
 > O sistema antigo, de livro com popup que abre ao aproximar a mão, continua disponível em **Sebraelab > Livros >
 > Configurar livro com popup (sem coleta)**.

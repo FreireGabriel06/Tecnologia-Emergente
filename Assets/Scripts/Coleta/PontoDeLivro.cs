@@ -11,8 +11,12 @@ public class PontoDeLivro : MonoBehaviour
     [Tooltip("Altura (m) em que o livro flutua acima deste ponto.")]
     [SerializeField, Min(0f)] private float alturaDoLivro = 0.14f;
 
+    [Tooltip("Dica mostrada no menu do hub quando o jogador demora a achar o livro (ex.: \"perto da bancada da cozinha\").")]
+    [SerializeField] private string dica = "";
+
     public Vector3 PosicaoDoLivro => transform.position + Vector3.up * alturaDoLivro;
     public Quaternion RotacaoDoLivro => transform.rotation;
+    public string Dica => dica;
 
     private void OnDrawGizmos()
     {
