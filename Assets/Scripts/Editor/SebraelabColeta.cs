@@ -58,6 +58,13 @@ internal static class SebraelabColeta
             return;
         }
 
+        var gerenciador = MontarNaCena();
+        if (gerenciador != null) Selection.activeGameObject = gerenciador.gameObject;
+    }
+
+    /// <summary>Monta hub, esconderijos e livros na cena aberta (sem perguntas; usado também pelo modo automático).</summary>
+    internal static GerenciadorColeta MontarNaCena()
+    {
         Undo.SetCurrentGroupName("Coleta de livros (Sebraelab)");
         int grupo = Undo.GetCurrentGroup();
 
@@ -96,7 +103,7 @@ internal static class SebraelabColeta
 
         Undo.CollapseUndoOperations(grupo);
         EditorSceneManager.MarkSceneDirty(gerenciador.gameObject.scene);
-        Selection.activeGameObject = gerenciador.gameObject;
+        return gerenciador;
     }
 
     [MenuItem("Sebraelab/Coleta de livros/Criar esconderijo onde a Scene View está olhando", false, 31)]

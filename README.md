@@ -70,6 +70,7 @@ Docs/            GDD, guia e passo a passo
 | `DesktopPlayerController` | Jogador para testar no PC sem óculos (WASD + mouse). Sem headset, ele substitui o XR Origin; com headset, se desliga sozinho. |
 | `DesktopInteracao` | No teste pelo PC, mira com o centro da tela e aperta **E** ou clica: pega o livro escondido e aperta os botões do menu do hub. |
 | `DemonstracaoGuiada` | Passeio automático pela cena (acha e pega os 3 livros, volta ao hub e abre a introdução de cada um), usado para gravar a demonstração. |
+| `SebraelabAutomatico` (Editor) | Modo sem cliques pela linha de comando (usado pelo `FAZER_TUDO.bat`): `SebraelabAutomatico.Configurar` (em `-batchmode`) e `SebraelabAutomatico.GravarDemonstracao`. Fecha a Unity no fim com o código de saída. |
 | `SebraelabGravador` (Editor) | **Sebraelab > Gravar vídeo de demonstração**: dá Play, faz o passeio e grava um MP4 com o Unity Recorder em `Gravacoes/`. |
 | `SebraelabConfigurador` (Editor) | **Sebraelab > Configurar projeto VR (automático)**: instala o URP, importa o XR Origin, ativa o OpenXR para PC e Quest e cria a cena com o hub dos livros e os 3 livros escondidos. Pergunta sozinho na primeira vez que o projeto é aberto. |
 | `SebraelabColeta` (Editor) | Monta a coleta: hub na Mesa Grande (lugares dos livros, luz, menu), esconderijos em móveis do Sebraelab (procura superfícies planas com raycast) e os 3 livros escondidos. Menus **Sebraelab > Coleta de livros** e **Sebraelab > Livros > Transformar em livro escondido (coleta)**. |
@@ -91,6 +92,8 @@ Os scripts da pasta `Player/` servem para testar o cenário no PC, sem óculos.
 3. Clone o repositório e abra a pasta pelo Unity Hub (*Add > Add project from disk*).
 4. **Primeira vez (uma pessoa só):** quando aparecer a janela *Sebraelab VR*, clique em **Configurar agora** e espere o
    *Pronto!*. Depois faça commit e push de tudo. Detalhes no [passo 1 do guia](Docs/CONFIGURACAO_UNITY.md#1-abrir-e-configurar-o-projeto-uma-pessoa-só-na-primeira-vez).
+   **Atalho no Windows:** feche a Unity e dê dois cliques em **`FAZER_TUDO.bat`**: ele configura o projeto sozinho e
+   ainda grava um vídeo real do jogo em `Gravacoes/Sebraelab_demo.mp4`.
 5. Abra `Assets/Scenes/Sebraelab.unity` e dê **Play** (sem óculos: WASD + mouse; mire num livro escondido e aperte **E** para pegar; no hub, mire nos botões do menu e aperte **E**).
 
 ## Regras do Git no grupo

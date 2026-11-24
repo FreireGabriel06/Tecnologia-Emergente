@@ -2,6 +2,7 @@
 * text=auto
 
 # Código
+*.bat    text eol=crlf
 *.cs     text diff=csharp
 *.shader text
 *.hlsl   text
