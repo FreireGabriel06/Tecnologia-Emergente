@@ -120,23 +120,6 @@ aberta**. A estante antiga (livros com popup na mesa) é desligada.
   fica em cima dele, com uma faixa de azulejos no topo.
 - **Vídeo:** `AzulejosSaoLuis.mp4` (6 s, em loop) é o vídeo dos três livros no menu.
 
-### 3.1 Cultura de São Luís do Maranhão
-
-O configurador já monta, na mesa dos livros, a **Estante maranhense**:
-
-- **Livros:** *O Mulato* (Aluísio Azevedo, 1881), *Os Tambores de São Luís* (Josué Montello, 1975) e *Poema Sujo*
-  (Ferreira Gullar, 1976), três autores nascidos em São Luís. Os textos ficam em `Assets/Livros/<título>.asset`; a capa
-  fica vazia (coloque a imagem no campo **Capa**, se tiverem uma com direito de uso).
-- **Painel de azulejos:** padrão de azulejo português, como os dos casarões do Centro Histórico (Patrimônio Mundial da
-  UNESCO). A textura é **gerada pelo próprio script** (`Assets/CulturaSaoLuis/Azulejo_SaoLuis.png`), sem imagem externa.
-  O painel é fixado na parede logo atrás da mesa, quando ela existe; senão fica num totem de madeira. Em cima dele há a
-  placa *Estante maranhense · Autores nascidos em São Luís do Maranhão*.
-- **Popup:** todo painel de livro ganha uma faixa de azulejos no topo, e o vídeo `AzulejosSaoLuis.mp4` (6 s, em loop)
-  é o vídeo dos três livros da estante.
-
-Se a cena foi criada antes disso, abra-a e use **Sebraelab > Cultura de São Luís > Montar estante maranhense na cena
-aberta**: os livros que ainda usam os dados de exemplo passam a ser os da estante e o painel é criado.
-
 ## 4. GIFs (vídeos)
 
 O Unity não toca `.gif`. Converta para `.mp4`:
