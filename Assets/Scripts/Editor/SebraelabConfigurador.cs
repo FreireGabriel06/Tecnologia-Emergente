@@ -124,6 +124,11 @@ public static class SebraelabConfigurador
             SessionState.SetBool(ChaveEmAndamento, false);
             EditorUtility.ClearProgressBar();
             Debug.LogException(erro);
+            if (SebraelabAutomatico.Ativo)
+            {
+                SebraelabAutomatico.ConfiguracaoFalhou(erro);
+                return;
+            }
             EditorUtility.DisplayDialog("Sebraelab",
                 "A configuração automática parou por causa de um erro (detalhes no Console).\n" +
                 "Depois de resolver, rode de novo: Sebraelab > Configurar projeto VR (automático).", "OK");
@@ -208,6 +213,12 @@ public static class SebraelabConfigurador
         mensagem += "\n\nAtenção: o Input System novo está desligado e os controles VR não vão funcionar. " +
                     "Vá em Edit > Project Settings > Player > Active Input Handling, escolha \"Both\" e reinicie o Unity.";
 #endif
+
+        if (SebraelabAutomatico.Ativo)
+        {
+            SebraelabAutomatico.ConfiguracaoTerminou(mensagem, avisos);
+            return;
+        }
 
         Debug.Log("[Sebraelab] " + mensagem.Replace("\n\n", "\n"));
         EditorUtility.DisplayDialog("Sebraelab VR", mensagem, "OK");
@@ -403,7 +414,26 @@ public static class SebraelabConfigurador
         PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { GraphicsDeviceType.Vulkan });
         EditorUserBuildSettings.androidBuildSubtarget = MobileTextureSubtarget.ASTC;
 
+        AtivarInputSystemNovo();
         AssetDatabase.SaveAssets();
+    }
+
+    /// <summary>
+    /// Active Input Handling = "Both": os controles VR usam o Input System novo e o teste no PC funciona com qualquer um.
+    /// Vale a partir da próxima vez que a Unity abrir; com isso ela não pergunta mais sobre os "backends" do Input System.
+    /// </summary>
+    private static void AtivarInputSystemNovo()
+    {
+        var configuracoes = Resources.FindObjectsOfTypeAll<PlayerSettings>();
+        if (configuracoes.Length == 0) return;
+
+        var serializado = new SerializedObject(configuracoes[0]);
+        var entrada = serializado.FindProperty("activeInputHandler");
+        if (entrada == null || entrada.intValue != 0) return; // já usa o novo ou os dois
+
+        entrada.intValue = 2; // 0 = antigo, 1 = novo, 2 = os dois
+        serializado.ApplyModifiedPropertiesWithoutUndo();
+        Debug.Log("[Sebraelab] Active Input Handling = Both (vale depois de reabrir a Unity).");
     }
 
     // =====================================================================

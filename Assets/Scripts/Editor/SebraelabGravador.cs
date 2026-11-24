@@ -25,24 +25,40 @@ public static class SebraelabGravador
     }
 
     [MenuItem("Sebraelab/Gravar vídeo de demonstração", false, -90)]
-    private static void Gravar()
-    {
-        if (EditorApplication.isPlaying) { EditorUtility.DisplayDialog("Sebraelab", "Saia do modo Play antes de gravar.", "OK"); return; }
-        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+    private static void Gravar() => GravarAgora();
 
-        if (File.Exists(SebraelabConfigurador.CaminhoCena)) EditorSceneManager.OpenScene(SebraelabConfigurador.CaminhoCena);
+    /// <summary>Abre a cena, dá Play e começa a gravar. Retorna falso se não deu para começar.</summary>
+    internal static bool GravarAgora()
+    {
+        bool automatico = SebraelabAutomatico.Ativo;
+        if (EditorApplication.isPlaying)
+        {
+            Avisar("Saia do modo Play antes de gravar.", automatico);
+            return false;
+        }
+        if (!automatico && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return false;
+
+        if (File.Exists(SebraelabConfigurador.CaminhoCena) &&
+            EditorSceneManager.GetActiveScene().path != SebraelabConfigurador.CaminhoCena)
+            EditorSceneManager.OpenScene(SebraelabConfigurador.CaminhoCena);
 
         var jogador = GameObject.Find(NomeJogador);
         if (jogador == null || jogador.GetComponent<DesktopPlayerController>() == null)
         {
-            EditorUtility.DisplayDialog("Sebraelab",
-                "Não achei o \"" + NomeJogador + "\" na cena. Rode antes Sebraelab > Configurar projeto VR (automático).", "OK");
-            return;
+            Avisar("Não achei o \"" + NomeJogador + "\" na cena. Rode antes Sebraelab > Configurar projeto VR (automático).", automatico);
+            return false;
         }
 
         // A DemonstracaoGuiada só é adicionada depois de entrar no Play, então nada muda na cena salva.
         SessionState.SetBool(ChaveGravando, true);
         EditorApplication.isPlaying = true;
+        return true;
+    }
+
+    private static void Avisar(string mensagem, bool automatico)
+    {
+        if (automatico) Debug.LogWarning("[Sebraelab] " + mensagem);
+        else EditorUtility.DisplayDialog("Sebraelab", mensagem, "OK");
     }
 
     private static void AoMudarModo(PlayModeStateChange estado)
@@ -73,6 +89,11 @@ public static class SebraelabGravador
             EditorApplication.update -= Acompanhar;
 
             var pasta = Path.GetFullPath("Gravacoes");
+            if (SebraelabAutomatico.Ativo)
+            {
+                SebraelabAutomatico.GravacaoTerminou(Path.Combine(pasta, "Sebraelab_demo.mp4"));
+                return;
+            }
             if (Directory.Exists(pasta)) EditorUtility.RevealInFinder(Path.Combine(pasta, "Sebraelab_demo.mp4"));
             EditorUtility.DisplayDialog("Sebraelab",
                 "Vídeo salvo em:\n" + Path.Combine(pasta, "Sebraelab_demo.mp4") + "\n\nEnvie esse arquivo para o Claude colocar no vídeo de apresentação.", "OK");
