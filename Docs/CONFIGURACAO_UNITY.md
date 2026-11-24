@@ -18,10 +18,16 @@ cenário, dos livros e do jogador de teste. Tudo o que os menus fazem na cena po
 ## 1. Abrir e configurar o projeto (uma pessoa só, na primeira vez)
 
 > **Jeito mais rápido (Windows):** feche a Unity e dê dois cliques em **`FAZER_TUDO.bat`**, na pasta do projeto. Ele
-> atualiza o projeto (`git pull`), acha a Unity 6 instalada pelo Unity Hub, configura tudo sem abrir janela e depois abre
-> a Unity, joga sozinho e grava o vídeo do jogo em `Gravacoes/Sebraelab_demo.mp4`, fechando a Unity no fim. Os logs
-> ficam em `Gravacoes/1_configurar.log` e `Gravacoes/2_gravar.log`. Precisa estar logado no Unity Hub. Depois, faça o
-> commit (passo 6 abaixo). Sem o `.bat`, siga os passos abaixo.
+> atualiza o projeto com a versão mais nova do GitHub (`git pull`), acha a Unity 6 instalada pelo Unity Hub, configura
+> tudo sem abrir janela e depois abre a Unity, joga sozinho e grava o vídeo do jogo em `Gravacoes/Sebraelab_demo.mp4`,
+> fechando a Unity no fim. Os logs ficam em `Gravacoes/1_configurar.log` e `Gravacoes/2_gravar.log`. Precisa estar
+> logado no Unity Hub. Depois, faça o commit (passo 6 abaixo). Sem o `.bat`, siga os passos abaixo.
+>
+> - **Baixou o projeto como ZIP?** Na primeira vez o `.bat` liga a pasta ao GitHub sozinho (precisa do Git instalado) e,
+>   daí em diante, se atualiza a cada vez que você roda. Se algum arquivo da pasta estava diferente da versão do
+>   GitHub, uma cópia fica guardada no Git (`git stash list` mostra; `git stash pop` traz de volta).
+> - **Primeira vez numa pasta nova:** a Unity importa o projeto inteiro antes de configurar, então a janela preta fica
+>   parada em "Configurando o projeto" por 20 a 30 minutos. É normal. Para acompanhar, abra o `Gravacoes/1_configurar.log`.
 
 
 1. **Unity Hub > Add > Add project from disk** e escolha a pasta do repositório.

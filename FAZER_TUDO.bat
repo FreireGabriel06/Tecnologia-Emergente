@@ -3,14 +3,18 @@ setlocal EnableExtensions EnableDelayedExpansion
 title Sebraelab VR - configurar o projeto e gravar o video do jogo
 cd /d "%~dp0"
 set "PROJETO=%CD%"
+set "REPOSITORIO=https://github.com/FreireGabriel06/Tecnologia-Emergente.git"
+rem Depois de se atualizar no passo 1, este arquivo se reinicia com --atualizado.
+if /i "%~1"=="--atualizado" goto :depoisDaAtualizacao
 
 echo.
 echo  ============================================================
 echo   Sebraelab VR - faz tudo sozinho na Unity:
-echo     1. atualiza o projeto (git pull)
+echo     1. atualiza o projeto com a versao mais nova do GitHub
 echo     2. configura o projeto e cria a cena (sem abrir janela)
 echo     3. abre a Unity, joga sozinho e grava o video do jogo
-echo   Feche a Unity antes de continuar. Leva de 5 a 20 minutos.
+echo   Feche a Unity antes de continuar. Leva de 5 a 20 minutos
+echo   (na primeira vez numa pasta nova, 30 minutos ou mais).
 echo  ============================================================
 echo.
 pause
@@ -20,17 +24,42 @@ if not exist "%PROJETO%\ProjectSettings\ProjectVersion.txt" (
   pause
   exit /b 1
 )
-if not exist "%PROJETO%\Gravacoes" mkdir "%PROJETO%\Gravacoes"
+
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 echo.
 echo [1/3] Atualizando o projeto...
-where git >nul 2>nul
-if errorlevel 1 (
-  echo   Git nao encontrado: seguindo com os arquivos que ja estao na pasta.
-) else (
-  git pull --ff-only
-  if errorlevel 1 echo   Nao deu para atualizar ^(sem internet ou com mudancas locais^): seguindo assim mesmo.
+rem O bloco abaixo e lido inteiro antes de rodar. A atualizacao pode trocar este proprio
+rem arquivo, entao no fim do bloco ele se reinicia, ja na versao nova, a partir do passo 2.
+(
+  where git >nul 2>nul
+  if errorlevel 1 (
+    echo   Git nao encontrado: seguindo com os arquivos que ja estao na pasta.
+    echo   Para atualizar sem o Git, baixe o ZIP do projeto de novo e extraia por cima desta pasta.
+  ) else if exist "%PROJETO%\.git" (
+    git pull --ff-only
+    if errorlevel 1 echo   Nao deu para atualizar ^(sem internet ou com mudancas locais^): seguindo assim mesmo.
+  ) else (
+    echo   Esta pasta veio de um ZIP, sem o Git. Ligando a pasta ao GitHub para ela poder se atualizar...
+    git init -q -b main
+    git remote add -t main origin "%REPOSITORIO%"
+    git fetch --depth=1 origin main
+    if errorlevel 1 (
+      echo   Nao deu para baixar do GitHub ^(sem internet?^): seguindo com os arquivos que ja estao na pasta.
+      rmdir /s /q "%PROJETO%\.git" 2>nul
+    ) else (
+      git reset -q FETCH_HEAD
+      git -c user.name=Sebraelab -c user.email=sebraelab@localhost stash push -q -m "Arquivos da pasta antes de ligar ao GitHub"
+      git branch -q --set-upstream-to=origin/main main
+      echo   Pronto: a pasta esta na versao mais nova e, das proximas vezes, se atualiza sozinha.
+      echo   Se algum arquivo da pasta estava diferente, uma copia ficou guardada ^(git stash list^).
+    )
+  )
+  "%~f0" --atualizado
 )
+
+:depoisDaAtualizacao
+if not exist "%PROJETO%\Gravacoes" mkdir "%PROJETO%\Gravacoes"
 
 echo.
 echo [2/3] Procurando a Unity 6...

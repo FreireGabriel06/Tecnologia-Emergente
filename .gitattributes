@@ -2,7 +2,9 @@
 * text=auto
 
 # Código
-*.bat    text eol=crlf
+# .bat fica guardado com CRLF (fim de linha do Windows), sem conversão: assim ele funciona até baixado
+# sozinho pelo GitHub (botão "Download raw file"), além de no clone e no ZIP.
+*.bat    -text
 *.cs     text diff=csharp
 *.shader text
 *.hlsl   text
