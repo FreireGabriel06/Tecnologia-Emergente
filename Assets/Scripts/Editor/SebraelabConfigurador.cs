@@ -42,7 +42,6 @@ public static class SebraelabConfigurador
 {
     internal const string CaminhoCena = "Assets/Scenes/Sebraelab.unity";
     private const string PastaConfiguracoes = "Assets/Settings";
-    private const string PastaLivros = "Assets/Livros";
     private const string PastaMateriais = "Assets/Materials";
 
     private const string PacoteURP = "com.unity.render-pipelines.universal";
@@ -197,7 +196,8 @@ public static class SebraelabConfigurador
             "Pronto! A cena Assets/Scenes/Sebraelab.unity foi criada e está aberta.\n\n" +
             "• Dê Play: sem óculos, use WASD + mouse e aperte E num livro.\n" +
             "• Com o Quest conectado (Link/Air Link), a mesma cena roda em VR.\n" +
-            "• Na mesa estão os livros da Estante maranhense (Assets/Livros), com o painel de azulejos de São Luís.\n" +
+            "• Encontre os 3 livros escondidos pelo Sebraelab: pegue cada um (mão, raio ou E no PC).\n" +
+            "• No hub (a mesa na sua frente), o menu mostra a introdução de cada livro encontrado e o botão Desafios.\n" +
             "• Para gravar um vídeo do jogo: Sebraelab > Gravar vídeo de demonstração.\n\n" +
             "Lembre de fazer commit no Git (inclusive das pastas Packages e ProjectSettings).";
 
@@ -441,7 +441,8 @@ public static class SebraelabConfigurador
             var mesa = SebraelabMenu.EncontrarMesa(cenario);
             if (mesa != null)
             {
-                // Estante maranhense em cima de uma mesa do Sebraelab e o jogador 1,8 m à frente dela.
+                // Hub dos livros em cima de uma mesa do Sebraelab e o jogador começa 1,8 m à frente dela.
+                // Os livros ficam escondidos em móveis espalhados pela sala.
                 var limitesMesa = mesa.bounds;
                 var centroMesa = new Vector3(limitesMesa.center.x, piso.max.y, limitesMesa.center.z);
                 var direcao = piso.center - centroMesa;
@@ -450,19 +451,19 @@ public static class SebraelabConfigurador
 
                 pontoInicial = centroMesa + direcao * 1.8f;
                 rotacaoInicial = Quaternion.LookRotation(-direcao, Vector3.up);
-                CriarLivrosNaMesa(limitesMesa, direcao);
+                SebraelabColeta.Montar(limitesMesa, direcao, piso.max.y, cenario);
             }
             else
             {
                 pontoInicial = new Vector3(piso.center.x, piso.max.y, piso.center.z);
-                CriarEstandeDeExemplo(pontoInicial + Vector3.forward * 2.5f, Quaternion.identity);
+                CriarHubDeExemplo(pontoInicial + Vector3.forward * 2.5f, Quaternion.identity, cenario);
             }
         }
         else
         {
             SebraelabMenu.CriarChaoTeleporte(Vector3.zero, new Vector2(30f, 30f), visivel: true,
                                              material: CriarMaterial("Chao_Exemplo", new Color(0.55f, 0.57f, 0.6f)));
-            CriarEstandeDeExemplo(new Vector3(0f, 0f, 2.5f), Quaternion.identity);
+            CriarHubDeExemplo(new Vector3(0f, 0f, 2.5f), Quaternion.identity, null);
         }
 
         // Jogador VR
@@ -507,97 +508,14 @@ public static class SebraelabConfigurador
         RenderSettings.ambientGroundColor = new Color(0.32f, 0.31f, 0.3f);
     }
 
-    /// <summary>Estande avulso (mesa + livros + luz), usado quando não há modelo do Sebraelab ou ele não tem mesa.</summary>
-    private static void CriarEstandeDeExemplo(Vector3 posicao, Quaternion rotacao)
-    {
-        var grupo = new GameObject("Estande 1 (exemplo)");
-        grupo.transform.SetPositionAndRotation(posicao, rotacao);
-
-        var mesa = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        mesa.name = "Mesa";
-        mesa.transform.SetParent(grupo.transform, false);
-        mesa.transform.localPosition = new Vector3(0f, 0.375f, 0f);
-        mesa.transform.localScale = new Vector3(1.4f, 0.75f, 0.6f);
-        mesa.GetComponent<Renderer>().sharedMaterial = CriarMaterial("Mesa_Exemplo", new Color(0.45f, 0.3f, 0.2f));
-        mesa.isStatic = true;
-
-        // O jogador está no -Z local do estande (de frente para ele).
-        CriarLivrosELuz(grupo.transform, alturaTampo: 0.75f, espaco: 0.4f, frenteLocal: Vector3.back);
-        SebraelabCulturaSaoLuis.CriarPainel(posicao + Vector3.up * 0.77f, rotacao * Vector3.back, posicao.y, posicao.y + 0.75f);
-    }
-
-    /// <summary>Livros da estante maranhense em cima de uma mesa que já existe no cenário.</summary>
-    private static void CriarLivrosNaMesa(Bounds limitesMesa, Vector3 direcaoJogador)
-    {
-        var grupo = new GameObject("Estante maranhense (livros na mesa)");
-        grupo.transform.SetPositionAndRotation(new Vector3(limitesMesa.center.x, limitesMesa.min.y, limitesMesa.center.z),
-                                               Quaternion.LookRotation(direcaoJogador, Vector3.up));
-        float largura = Mathf.Min(limitesMesa.size.x, limitesMesa.size.z);
-        CriarLivrosELuz(grupo.transform, alturaTampo: limitesMesa.size.y, espaco: Mathf.Clamp((largura - 0.2f) / 2f, 0.18f, 0.4f),
-                        frenteLocal: Vector3.forward);
-
-        // Painel de azulejos de São Luís atrás dos livros (na parede, se houver uma logo atrás).
-        var centroLivros = new Vector3(limitesMesa.center.x, limitesMesa.max.y + 0.02f, limitesMesa.center.z);
-        SebraelabCulturaSaoLuis.CriarPainel(centroLivros, direcaoJogador, limitesMesa.min.y, limitesMesa.max.y);
-    }
-
     /// <summary>
-    /// Cria os livros da "Estante maranhense" (obras de autores de São Luís, ver SebraelabCulturaSaoLuis), a luz de
-    /// destaque acima deles e a zona de destaque na frente (do lado "frenteLocal", onde fica o jogador).
+    /// Hub com uma mesa de exemplo, usado quando não há modelo do Sebraelab ou ele não tem mesa. O jogador está no -Z
+    /// local (de frente para a mesa).
     /// </summary>
-    private static void CriarLivrosELuz(Transform grupo, float alturaTampo, float espaco, Vector3 frenteLocal)
+    private static void CriarHubDeExemplo(Vector3 posicao, Quaternion rotacao, GameObject cenario)
     {
-        int quantidade = SebraelabCulturaSaoLuis.QuantidadeDeLivros;
-        var lateral = Vector3.Cross(Vector3.up, frenteLocal).normalized;
-        for (int i = 0; i < quantidade; i++)
-        {
-            // Objeto do livro com escala 1 e o cubo (o "modelo") como filho: é assim que um modelo importado
-            // normalmente fica, e evita que o popup herde a escala achatada do cubo.
-            var livro = new GameObject($"Livro {i + 1}");
-            livro.transform.SetParent(grupo, false);
-            float posicaoNaFila = i - (quantidade - 1) / 2f;
-            livro.transform.localPosition = lateral * (posicaoNaFila * espaco) + Vector3.up * (alturaTampo + 0.02f);
-            livro.transform.localRotation = Quaternion.Euler(0f, posicaoNaFila * 12f, 0f);
-
-            var modelo = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            modelo.name = "Modelo";
-            modelo.transform.SetParent(livro.transform, false);
-            modelo.transform.localScale = new Vector3(0.16f, 0.03f, 0.23f); // ~16 x 23 cm, deitado
-            modelo.GetComponent<Renderer>().sharedMaterial = CriarMaterial($"Livro_Estante_{i + 1}", SebraelabCulturaSaoLuis.CorDoLivro(i));
-
-            var livroPopup = SebraelabMenu.ConfigurarLivro(livro);
-            if (livroPopup == null) continue;
-
-            var serializado = new SerializedObject(livroPopup);
-            serializado.FindProperty("dados").objectReferenceValue = SebraelabCulturaSaoLuis.DadosDoLivro(i);
-            serializado.ApplyModifiedPropertiesWithoutUndo();
-        }
-
-        // Luz de destaque: acende quando o jogador chega perto.
-        var luz = new GameObject("Luz de destaque", typeof(Light));
-        luz.transform.SetParent(grupo, false);
-        luz.transform.localPosition = Vector3.up * (alturaTampo + 1.7f) + frenteLocal * 0.3f;
-        luz.transform.rotation = Quaternion.LookRotation(Vector3.down, grupo.forward);
-        var spot = luz.GetComponent<Light>();
-        spot.type = LightType.Spot;
-        spot.range = 4f;
-        spot.spotAngle = 60f;
-        spot.intensity = 3f;
-        spot.color = new Color(1f, 0.93f, 0.8f);
-
-        var zona = new GameObject("Zona de destaque", typeof(BoxCollider));
-        zona.transform.SetParent(grupo, false);
-        zona.transform.localPosition = frenteLocal * 1.2f + Vector3.up * 1.1f;
-        var caixa = zona.GetComponent<BoxCollider>();
-        caixa.isTrigger = true;
-        caixa.size = new Vector3(2.4f, 2.2f, 2f);
-
-        var destaque = zona.AddComponent<EstandeZonaDestaque>();
-        var destaqueSerializado = new SerializedObject(destaque);
-        var objetos = destaqueSerializado.FindProperty("objetosDestaque");
-        objetos.arraySize = 1;
-        objetos.GetArrayElementAtIndex(0).objectReferenceValue = luz;
-        destaqueSerializado.ApplyModifiedPropertiesWithoutUndo();
+        var mesa = SebraelabColeta.CriarMesaDeExemplo(posicao, rotacao);
+        SebraelabColeta.Montar(mesa.bounds, rotacao * Vector3.back, posicao.y, cenario);
     }
 
     private static Material CriarMaterial(string nome, Color cor)

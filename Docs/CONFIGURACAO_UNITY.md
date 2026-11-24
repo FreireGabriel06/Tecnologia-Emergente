@@ -30,9 +30,11 @@ cenário, dos livros e do jogador de teste. Tudo o que os menus fazem na cena po
    - ativa o **OpenXR** para PC e Android, com os controles do Quest e o *Meta Quest Support*;
    - deixa o build do Quest pronto (IL2CPP, ARM64, Vulkan, ASTC, Linear);
    - cria a cena **`Assets/Scenes/Sebraelab.unity`** **dentro do modelo do Sebraelab** (`Assets/Sebraelab3D/Sebrae Lab.fbx`),
-     com XR Origin, EventSystem de VR, jogador de teste do PC, chão de teleporte no piso e **3 livros de exemplo em cima
-     da "Mesa Grande"** (popup, vídeo e luz de destaque já ligados). O jogador começa de frente para essa mesa.
-5. No fim aparece **Pronto!**. Dê **Play** para testar: sem óculos, use WASD + mouse e aperte **E** num livro.
+     com XR Origin, EventSystem de VR, jogador de teste do PC, chão de teleporte no piso, o **hub dos livros** na
+     "Mesa Grande" (menu na parede de azulejos) e **3 livros escondidos** em móveis espalhados pela sala (ver passo 3).
+     O jogador começa no hub, de frente para a mesa.
+5. No fim aparece **Pronto!**. Dê **Play** para testar: sem óculos, ande com WASD + mouse, procure os livros e aperte
+   **E** mirando num livro para pegá-lo. Depois volte ao hub e use o menu.
 6. Faça o commit de tudo (inclusive `Packages/`, `ProjectSettings/` e as pastas novas em `Assets/`) e o push.
    Os outros só precisam dar `git pull` e abrir o projeto. Para eles o configurador não pergunta nada, porque a cena já existe.
 
@@ -57,48 +59,66 @@ Para outro modelo, coloque o arquivo em **`Assets/Models`** antes de usar o menu
    **Scale Factor** na aba **Model** do Inspector do arquivo e clique em **Apply**.
 4. **Materiais:** se o modelo veio sem cor, na aba **Materials** do Inspector do arquivo use **Extract Materials...**
    para `Assets/Materials`. Se ficarem rosa: **Window > Rendering > Render Pipeline Converter > Material Upgrade**.
-5. O jogador começa de frente para a "Mesa Grande". Para começar na entrada, mova o **XR Origin** (e o *Jogador PC*).
+5. O jogador começa no hub, de frente para a "Mesa Grande". Para começar na entrada, mova o **XR Origin** (e o *Jogador PC*).
 6. Se o teleporte não funcionar no piso, ajuste a altura do objeto **`Chao (teleporte)`** para ficar no nível do piso.
-7. Os livros da **Estante maranhense** (e o painel de azulejos atrás deles) podem ser movidos para outras mesas ou
-   apagados depois de configurar os livros de verdade.
+7. O **Hub dos livros**, os **Esconderijos dos livros** e os **Livros escondidos** podem ser movidos à vontade (passo 3).
 
-## 3. Livros
+## 3. Coleta de livros (o jogo)
 
-Os 3 livros da Estante maranhense (ver 3.1) já funcionam. Para os livros de verdade:
+Os livros ficam **escondidos pelo Sebraelab** e o jogador precisa encontrá-los, como as páginas do Slender. A princípio
+são **3 livros**.
 
-1. Coloque o modelo do livro em cima da mesa/estande e selecione-o na Hierarchy.
-2. Use **Sebraelab > Livros > Configurar livro selecionado**. Isso faz automaticamente os **PASSOS 4 e 5** do guia:
-   - **Box Collider** ajustado ao tamanho do livro;
-   - **Rigidbody** com gravidade (o livro fica apoiado na mesa e cai se for solto);
-   - **XR Grab Interactable** (pegar com o Grip);
-   - **LivroPopup** e um filho **Popup**: Canvas em World Space com escala 0.001, painel, título, autor, capa,
-     resumo, vídeo e um botão *Iniciar Desafio* (desativado, para os minigames no futuro).
-3. Conteúdo do popup: na pasta `Assets/Livros`, botão direito > **Create > Sebraelab > Dados do Livro**.
-   Preencha título, autor, resumo, capa e vídeo e arraste o asset para o campo **Dados** do `LivroPopup`.
-   Os livros da estante usam `Assets/Livros/O Mulato`, `Os Tambores de São Luís` e `Poema Sujo`: é só editar esses arquivos.
-   Campos vazios (autor, capa, vídeo) somem do popup automaticamente.
-4. No `LivroPopup`, **Quando Mostrar** escolhe se o popup abre ao aproximar a mão, ao segurar, ou nos dois casos.
-5. Depois de configurar um livro, arraste-o para `Assets/Livros` para virar *prefab*. Os outros livros podem ser cópias
-   desse prefab, trocando só o modelo e o campo **Dados**.
+**Como funciona:**
 
-> A mesa/estande precisa ter collider (passo 2), senão o livro cai através dela ao dar Play.
+1. O jogador começa no **hub** (a "Mesa Grande", com o menu na parede de azulejos) e vê o aviso *Encontre os 3 livros*.
+2. A cada partida os livros aparecem em esconderijos **sorteados** entre os **Esconderijos dos livros**: arquibancada,
+   mesa da recepção, bancada da cozinha, mesa perto da TV, estações de trabalho e bancos. Eles flutuam, giram, brilham e
+   fazem um som baixinho, para serem achados.
+3. **Pegar o livro de qualquer jeito conta**: em VR com a mão (botão **Grip**) ou com o raio do controle; no PC mirando
+   e apertando **E** (ou clicando). Aparece o aviso **"1 de 3 livros · Você encontrou: ..."**, toca um som e o livro vai
+   para o lugar dele na mesa do hub. Quem cuida disso é um só script, o `GerenciadorColeta` (hub central).
+4. No **menu do hub**, os livros ainda não encontrados aparecem como **???**. Escolha um livro encontrado para ler a
+   **introdução da história**, com o vídeo do livro. Pegar o livro em cima da mesa do hub também abre a introdução dele.
+5. O botão **Desafios** já está no menu, mas **ainda não tem função**: ele mostra *"Os desafios deste livro chegam em
+   breve!"* e dispara o evento **Ao Abrir Desafios** do `HubLivrosMenu` (ver passo 8).
+
+**O que está na cena:**
+
+| Objeto | O que é |
+| --- | --- |
+| `Hub dos livros` | `GerenciadorColeta` (contagem, sorteio, aviso, sons), os 3 **Lugar do livro N** na mesa, **Luz do hub**, **Zona do hub** e o **Menu do hub** (Canvas em World Space) |
+| `Painel de azulejos (São Luís)` | Parede de azulejos com a placa *Estante maranhense*. O menu fica em cima dela |
+| `Esconderijos dos livros` | Um objeto **Esconderijo de Livro** (`PontoDeLivro`) para cada lugar possível |
+| `Livros escondidos` | Os 3 livros: `XR Grab Interactable` + `Rigidbody` parado + `LivroColetavel`, com luz e som |
+
+**Trocar o conteúdo:** os textos ficam nos assets *Dados do Livro* em `Assets/Livros` (`O Mulato`, `Os Tambores de São
+Luís`, `Poema Sujo`). O campo **Resumo** é a **introdução da história** que aparece no menu. Capa e vídeo também.
+Para um livro novo: **Create > Sebraelab > Dados do Livro** e arraste o asset para o campo **Dados** do `LivroColetavel`.
+
+**Outro modelo de livro:** coloque o modelo na cena, selecione-o e use **Sebraelab > Livros > Transformar em livro
+escondido (coleta)**. Ele ganha collider, `Rigidbody` parado, `XR Grab Interactable` e `LivroColetavel`, e entra na
+lista do hub. Preencha **Dados** e **Cor** no `LivroColetavel`.
+
+**Esconderijos:** mova os objetos de `Esconderijos dos livros` ou duplique um para criar outro. Também dá para olhar um
+móvel na Scene View e usar **Sebraelab > Coleta de livros > Criar esconderijo onde a Scene View está olhando**. Para os
+livros ficarem sempre no mesmo lugar, desmarque **Sortear Esconderijos** no `GerenciadorColeta` e posicione os livros.
+
+**Cena criada antes desta versão:** abra-a e use **Sebraelab > Coleta de livros > Montar hub e livros escondidos na cena
+aberta**. A estante antiga (livros com popup na mesa) é desligada.
+
+> O sistema antigo, de livro com popup que abre ao aproximar a mão, continua disponível em **Sebraelab > Livros >
+> Configurar livro com popup (sem coleta)**.
 
 ### 3.1 Cultura de São Luís do Maranhão
 
-O configurador já monta, na mesa dos livros, a **Estante maranhense**:
-
-- **Livros:** *O Mulato* (Aluísio Azevedo, 1881), *Os Tambores de São Luís* (Josué Montello, 1975) e *Poema Sujo*
-  (Ferreira Gullar, 1976), três autores nascidos em São Luís. Os textos ficam em `Assets/Livros/<título>.asset`; a capa
-  fica vazia (coloque a imagem no campo **Capa**, se tiverem uma com direito de uso).
+- **Livros:** os 3 livros escondidos são *O Mulato* (Aluísio Azevedo, 1881), *Os Tambores de São Luís* (Josué Montello,
+  1975) e *Poema Sujo* (Ferreira Gullar, 1976), três autores nascidos em São Luís: a *Estante maranhense*. A capa fica
+  vazia (coloque a imagem no campo **Capa**, se tiverem uma com direito de uso).
 - **Painel de azulejos:** padrão de azulejo português, como os dos casarões do Centro Histórico (Patrimônio Mundial da
   UNESCO). A textura é **gerada pelo próprio script** (`Assets/CulturaSaoLuis/Azulejo_SaoLuis.png`), sem imagem externa.
-  O painel é fixado na parede logo atrás da mesa, quando ela existe; senão fica num totem de madeira. Em cima dele há a
-  placa *Estante maranhense · Autores nascidos em São Luís do Maranhão*.
-- **Popup:** todo painel de livro ganha uma faixa de azulejos no topo, e o vídeo `AzulejosSaoLuis.mp4` (6 s, em loop)
-  é o vídeo dos três livros da estante.
-
-Se a cena foi criada antes disso, abra-a e use **Sebraelab > Cultura de São Luís > Montar estante maranhense na cena
-aberta**: os livros que ainda usam os dados de exemplo passam a ser os da estante e o painel é criado.
+  O painel é fixado na parede logo atrás da mesa do hub, quando ela existe; senão fica num totem de madeira. O menu do hub
+  fica em cima dele, com uma faixa de azulejos no topo.
+- **Vídeo:** `AzulejosSaoLuis.mp4` (6 s, em loop) é o vídeo dos três livros no menu.
 
 ## 4. GIFs (vídeos)
 
@@ -109,12 +129,12 @@ ffmpeg -i animacao.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/
 ```
 
 (ou use qualquer conversor online de GIF para MP4). Coloque o `.mp4` em `Assets/Videos` e arraste para o campo
-**Video** do asset *Dados do Livro*. O vídeo toca em loop quando o popup abre e para quando fecha.
+**Video** do asset *Dados do Livro*. O vídeo toca em loop no menu do hub quando o livro é escolhido.
 Se o vídeo não tocar no Quest, marque **Transcode** nas configurações de import do vídeo.
 
 ## 5. Estandes (área de destaque)
 
-O estande de exemplo já tem uma **Zona de destaque** e uma **Luz de destaque**. Para outro estande:
+O hub já tem uma **Zona do hub** e a **Luz do hub**. Para destacar outro lugar:
 
 1. Crie um objeto vazio na frente do estande, por exemplo `Zona Estande 2`.
 2. **Add Component > Estande Zona Destaque**. Ele cria um **Box Collider** como *trigger*. Ajuste o tamanho para cobrir
@@ -125,8 +145,8 @@ O estande de exemplo já tem uma **Zona de destaque** e uma **Luz de destaque**.
 
 ## 6. Testar sem óculos
 
-- Dê Play na cena: **WASD** anda, **mouse** olha, **Shift** corre, **E** ou **clique** no livro abre o popup,
-  **Esc** solta o mouse.
+- Dê Play na cena: **WASD** anda, **mouse** olha, **Shift** corre, **Esc** solta o mouse. Mirando com o ponto no centro
+  da tela, **E** ou **clique** pega o livro escondido e aperta os botões do menu do hub (a dica aparece embaixo da mira).
 - Se um headset estiver conectado (Quest Link / Air Link), a mesma cena usa o XR Origin e o jogador de PC se desliga sozinho.
 - Para testar o **pegar** sem óculos, use o **XR Device Simulator** (Package Manager > XR Interaction Toolkit > Samples).
   Nesse caso desmarque **Trocar Automaticamente** no `DesktopPlayerController` ou desative o *Jogador PC*.
@@ -134,7 +154,8 @@ O estande de exemplo já tem uma **Zona de destaque** e uma **Luz de destaque**.
 ## 6.1 Gravar um vídeo real do jogo (1 clique)
 
 Com o projeto configurado, use **Sebraelab > Gravar vídeo de demonstração**. A Unity abre a cena, entra no Play e faz
-um passeio automático: olha a sala, vai até os livros e abre o painel de cada um. Tudo é gravado em MP4 (1920x1080) pelo
+um passeio automático: olha o hub, vai atrás de cada livro escondido e pega, volta ao hub, abre a introdução de cada
+livro no menu e aperta Desafios. Tudo é gravado em MP4 (1920x1080) pelo
 **Unity Recorder**. No fim ela sai do Play sozinha e abre a pasta **`Gravacoes/`** do projeto com o arquivo
 `Sebraelab_demo.mp4`. Essa pasta fica fora de `Assets` e não vai para o Git.
 
@@ -147,11 +168,13 @@ O passeio é feito pelo script `DemonstracaoGuiada` no jogador de PC e funciona 
 3. Conecte o Quest no USB, escolha-o em **Run Device** e clique em **Build And Run**.
 4. Se o Unity mostrar avisos de validação, use **Edit > Project Settings > XR Plug-in Management > Project Validation > Fix All**.
 
-## 8. Minigames (fase futura)
+## 8. Desafios / minigames (fase futura)
 
-Cada popup já tem um botão **BotaoMinigame** desativado, ligado em `LivroPopup.IniciarMinigame()`. Quando for a hora:
-ative o botão e, no `LivroPopup`, adicione no evento **Ao Iniciar Minigame** o que deve acontecer (carregar uma cena,
-ativar um objeto etc.). A cena já tem o EventSystem de VR que o botão precisa.
+O botão **Desafios** do menu do hub já existe e funciona com o raio do controle e com a mira do PC. Por enquanto ele só
+mostra *"em breve"*. Quando for a hora: selecione **Hub dos livros > Menu do hub** e, no `HubLivrosMenu`, adicione no
+evento **Ao Abrir Desafios** o que deve acontecer (carregar uma cena, ativar um objeto etc.). O evento recebe os
+**Dados do Livro** escolhido, então dá para abrir o desafio certo de cada livro. A mensagem fica no campo
+**Mensagem Desafios**.
 
 ---
 
@@ -175,10 +198,12 @@ ativar um objeto etc.). A cena já tem o EventSystem de VR que o botão precisa.
 | Não aparece o menu **Sebraelab** | Há erro de compilação no Console. Resolva primeiro (geralmente é o item acima). |
 | A janela do configurador não apareceu | Use **Sebraelab > Configurar projeto VR (automático)**. |
 | Controles VR não respondem | **Edit > Project Settings > Player > Active Input Handling** = *Both* (ou *Input System Package*) e reinicie. |
-| Texto do popup não aparece / quadrados | **Window > TextMeshPro > Import TMP Essential Resources**. |
+| Texto do menu ou do aviso não aparece / quadrados | **Window > TextMeshPro > Import TMP Essential Resources**. |
 | Materiais rosa | Converta para URP (passo 2.4). |
 | Livro cai através da mesa/chão | O cenário está sem colliders (passo 2.2). |
-| Não consigo pegar o livro | Confira se o livro tem Collider e **XR Grab Interactable** (use o menu do passo 3). |
-| Popup não abre | Confira o campo **Canvas Popup** do `LivroPopup` e o **Quando Mostrar**. |
+| Não consigo pegar o livro | Confira se o livro tem Collider, **XR Grab Interactable** e **Livro Coletavel** (menu do passo 3). |
+| Pego o livro e nada acontece | A cena precisa do `GerenciadorColeta` (objeto **Hub dos livros**). Use o menu da coleta (passo 3). |
+| Livros todos no mesmo lugar / não saem do lugar | Há menos esconderijos que livros: crie mais (passo 3). |
+| O raio não clica no menu do hub | O Canvas precisa do **Tracked Device Graphic Raycaster** e a cena de um **EventSystem** com **XR UI Input Module**. |
 | Teleporte não funciona | O chão precisa de **Teleportation Area** com a camada **Teleport** (passo 2.6). |
 | O modelo aparece "quebrado" depois do clone | Falta o Git LFS: rode `git lfs install` e depois `git lfs pull`. |

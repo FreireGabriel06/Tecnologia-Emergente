@@ -10,12 +10,12 @@ using UnityEngine.Video;
 
 /// <summary>
 /// Cultura de São Luís do Maranhão no Sebraelab VR:
-/// - a "Estante maranhense": os livros de exemplo viram obras de autores nascidos em São Luís;
-/// - um painel de azulejos (padrão português, como nos casarões do Centro Histórico) atrás dos livros;
-/// - a textura de azulejo, gerada aqui mesmo (não depende de imagem externa), também enfeita o topo dos popups.
+/// - os 3 livros escondidos (coleta) são obras de autores nascidos em São Luís, a "Estante maranhense";
+/// - um painel de azulejos (padrão português, como nos casarões do Centro Histórico) no hub, atrás da mesa,
+///   com o menu dos livros em cima dele;
+/// - a textura de azulejo, gerada aqui mesmo (não depende de imagem externa), também enfeita o topo dos menus.
 ///
-/// O configurador automático já monta tudo isso na cena nova. Para uma cena criada antes, use
-/// Sebraelab > Cultura de São Luís > Montar estante maranhense na cena aberta.
+/// Quem monta tudo isso na cena é o <see cref="SebraelabColeta"/> (chamado pelo configurador automático).
 /// </summary>
 internal static class SebraelabCulturaSaoLuis
 {
@@ -72,60 +72,6 @@ internal static class SebraelabCulturaSaoLuis
     internal static int QuantidadeDeLivros => Estante.Length;
 
     internal static Color CorDoLivro(int indice) => Estante[indice % Estante.Length].Cor;
-
-    // =====================================================================
-    // Menu
-    // =====================================================================
-
-    [MenuItem("Sebraelab/Cultura de São Luís/Montar estante maranhense na cena aberta", false, 40)]
-    private static void MontarNaCenaAberta()
-    {
-        var livros = new List<LivroPopup>(Object.FindObjectsByType<LivroPopup>(FindObjectsInactive.Include, FindObjectsSortMode.None));
-        if (livros.Count == 0)
-        {
-            EditorUtility.DisplayDialog("Sebraelab",
-                "A cena aberta não tem livros. Rode Sebraelab > Configurar projeto VR (automático) ou configure um livro " +
-                "com Sebraelab > Livros > Configurar livro selecionado e tente de novo.", "OK");
-            return;
-        }
-
-        Undo.SetCurrentGroupName("Estante maranhense (Sebraelab)");
-        int grupo = Undo.GetCurrentGroup();
-
-        // Ordena os livros da esquerda para a direita, do ponto de vista do jogador.
-        var centro = Vector3.zero;
-        foreach (var livro in livros) centro += livro.transform.position;
-        centro /= livros.Count;
-        var direcao = DirecaoDoJogador(centro);
-        var lateral = Vector3.Cross(Vector3.up, direcao);
-        livros.Sort((a, b) => Vector3.Dot(b.transform.position - centro, lateral).CompareTo(Vector3.Dot(a.transform.position - centro, lateral)));
-
-        int trocados = 0;
-        for (int i = 0; i < livros.Count; i++)
-        {
-            var atual = livros[i].Dados;
-            if (atual != null && !atual.name.StartsWith("Livro de exemplo")) continue; // não mexe em livro já cadastrado
-
-            var serializado = new SerializedObject(livros[i]);
-            serializado.FindProperty("dados").objectReferenceValue = DadosDoLivro(i);
-            serializado.ApplyModifiedProperties();
-            livros[i].AplicarDados();
-            trocados++;
-        }
-
-        bool painelNovo = GameObject.Find(NomePainel) == null;
-        if (painelNovo)
-        {
-            float tampo = centro.y - 0.02f;
-            float piso = AlturaDoPiso(centro, tampo - 0.75f);
-            CriarPainel(centro, direcao, piso, tampo);
-        }
-
-        Undo.CollapseUndoOperations(grupo);
-        EditorSceneManager.MarkSceneDirty(livros[0].gameObject.scene);
-        Debug.Log($"[Sebraelab] Estante maranhense: {trocados} livro(s) com obras de autores de São Luís" +
-                  (painelNovo ? " e painel de azulejos criado." : "; o painel de azulejos já existia."));
-    }
 
     // =====================================================================
     // Livros
@@ -466,7 +412,7 @@ internal static class SebraelabCulturaSaoLuis
         System.Array.Sort(acertos, (a, b) => a.distance.CompareTo(b.distance));
         foreach (var a in acertos)
         {
-            if (a.collider.GetComponentInParent<LivroPopup>() != null) continue;
+            if (a.collider.GetComponentInParent<LivroPopup>() != null || a.collider.GetComponentInParent<LivroColetavel>() != null) continue;
             if (a.collider.GetComponentInParent<Rigidbody>() != null) continue;
             acerto = a;
             return true;
@@ -478,30 +424,6 @@ internal static class SebraelabCulturaSaoLuis
     // =====================================================================
     // Utilitários
     // =====================================================================
-
-    /// <summary>De que lado dos livros o jogador fica: o jogador de PC ou a câmera principal; senão, a frente dos livros.</summary>
-    private static Vector3 DirecaoDoJogador(Vector3 centro)
-    {
-        Vector3? posicao = null;
-        var jogador = Object.FindFirstObjectByType<DesktopPlayerController>(FindObjectsInactive.Include);
-        if (jogador != null) posicao = jogador.transform.position;
-        else if (Camera.main != null) posicao = Camera.main.transform.position;
-
-        var direcao = posicao.HasValue ? posicao.Value - centro : Vector3.back;
-        direcao.y = 0f;
-        return direcao.sqrMagnitude > 0.01f ? direcao.normalized : Vector3.back;
-    }
-
-    private static float AlturaDoPiso(Vector3 centroLivros, float padrao)
-    {
-        Physics.SyncTransforms();
-        foreach (var a in Physics.RaycastAll(centroLivros + Vector3.up * 0.1f, Vector3.down, 3f, ~0, QueryTriggerInteraction.Ignore))
-        {
-            if (a.collider.GetComponentInParent<LivroPopup>() != null) continue;
-            if (a.collider.gameObject.name == SebraelabMenu.NomeChaoTeleporte) return a.point.y;
-        }
-        return padrao;
-    }
 
     private static void CriarPasta(string caminho)
     {

@@ -10,7 +10,7 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables; // XRI 3.x. No XRI 2.x q
 /// Controla o popup (Canvas em World Space) de um livro da exposição.
 ///
 /// Como usar:
-/// 1. Selecione o livro na Hierarchy e use o menu Sebraelab > Livros > Configurar livro selecionado.
+/// 1. Selecione o livro na Hierarchy e use o menu Sebraelab > Livros > Configurar livro com popup (sem coleta).
 ///    Isso adiciona Collider, Rigidbody, XR Grab Interactable, este script e cria o popup já ligado.
 /// 2. (Opcional) Crie um asset em Assets > Create > Sebraelab > Dados do Livro e arraste para "Dados".
 ///    Sem ele, o popup mostra o texto que você escrever direto nos textos do Canvas.
@@ -86,7 +86,7 @@ public class LivroPopup : MonoBehaviour
             Debug.LogWarning($"[LivroPopup] '{name}' não tem XR Grab Interactable: o popup só abre por código (MostrarPopup).", this);
 
         if (canvasPopup == null)
-            Debug.LogWarning($"[LivroPopup] '{name}' está sem o Canvas do popup. Use o menu Sebraelab > Livros > Configurar livro selecionado.", this);
+            Debug.LogWarning($"[LivroPopup] '{name}' está sem o Canvas do popup. Use o menu Sebraelab > Livros > Configurar livro com popup (sem coleta).", this);
 
         AplicarDados();
         PrepararVideo();
