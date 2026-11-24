@@ -21,6 +21,8 @@ a introdução da história, o vídeo e o botão **Desafios** (preparado para os
 - [x] Modelo 3D do Sebraelab no projeto (`Assets/Sebraelab3D`): o configurador monta a cena dentro dele
 - [x] Cultura de São Luís: Estante maranhense (Aluísio Azevedo, Josué Montello, Ferreira Gullar) e painel de azulejos portugueses
 - [x] Coleta de livros: 3 livros escondidos em esconderijos sorteados, hub central com menu (introdução da história) e botão Desafios preparado
+- [x] Ajuda ao jogador (detector de livros e dicas no menu), música ambiente, comemoração e tempo no final
+- [x] Visual: sol com sombras suaves, céu, reflexos, pós-processamento (bloom nos livros), suportes no hub e cena organizada em grupos
 - [ ] **Fase 1**: abrir o projeto no Unity 6 e rodar o configurador (uma pessoa só) e conferir o cenário
 - [ ] **Fase 2**: posicionar e configurar os livros de verdade
 - [ ] **Fase 3**: textos, capas e vídeos de cada livro
@@ -62,7 +64,9 @@ Docs/            GDD, guia e passo a passo
 | `PontoDeLivro` | Esconderijo possível para um livro (*Esconderijo de Livro*). |
 | `AvisoColeta` | Aviso na frente do jogador, estilo Slender ("2 de 3 livros"), que funciona em VR e no PC e aparece por cima das paredes. |
 | `HubLivrosMenu` | Menu do hub: lista dos livros (??? até ser encontrado), introdução da história, capa, vídeo e o botão **Desafios** (evento *Ao Abrir Desafios*, ainda sem função). Funciona com o raio do controle e com a mira do PC. |
-| `SonsGerados` | Sons gerados por código (brilho do livro, livro encontrado, todos encontrados), para não depender de arquivos de áudio. |
+| `SonsGerados` | Sons gerados por código (brilho do livro, livro encontrado, todos encontrados, ping do detector e música ambiente), para não depender de arquivos de áudio. |
+| `OtimizarParaQuest` | No Quest (Android) desliga o que pesa mais, como o pós-processamento. |
+| `InfoDaCena` | Versão da cena gerada; o configurador recria cenas antigas (a antiga vai para `Assets/Scenes/Antigas`). |
 | `LivroPopup` | (Modelo antigo, sem coleta) Vai no livro. Abre o popup quando a mão se aproxima (Hover) e/ou pega o livro (Select) e fecha ao soltar. Toca o vídeo em loop e tem o gancho `IniciarMinigame()`. |
 | `LivroData` | Asset com título, autor, resumo, capa e vídeo de um livro (*Assets > Create > Sebraelab > Dados do Livro*). |
 | `PopupOlharParaJogador` | Mantém o popup em pé acima do livro e virado para o jogador, mesmo com o livro girando na mão. |
@@ -74,6 +78,7 @@ Docs/            GDD, guia e passo a passo
 | `SebraelabGravador` (Editor) | **Sebraelab > Gravar vídeo de demonstração**: dá Play, faz o passeio e grava um MP4 com o Unity Recorder em `Gravacoes/`. |
 | `SebraelabConfigurador` (Editor) | **Sebraelab > Configurar projeto VR (automático)**: instala o URP, importa o XR Origin, ativa o OpenXR para PC e Quest e cria a cena com o hub dos livros e os 3 livros escondidos. Pergunta sozinho na primeira vez que o projeto é aberto. |
 | `SebraelabColeta` (Editor) | Monta a coleta: hub na Mesa Grande (lugares dos livros, luz, menu), esconderijos em móveis do Sebraelab (procura superfícies planas com raycast) e os 3 livros escondidos. Menus **Sebraelab > Coleta de livros** e **Sebraelab > Livros > Transformar em livro escondido (coleta)**. |
+| `SebraelabVisual` (Editor) | Acabamento visual: URP com HDR, MSAA e sombras suaves, sol, céu, luz ambiente, reflection probe, pós-processamento (tonemapping, bloom, cor, vinheta) e partículas. |
 | `SebraelabCulturaSaoLuis` (Editor) | Cultura de São Luís do Maranhão: dados dos 3 livros da **Estante maranhense** (obras de autores nascidos em São Luís), textura de azulejo português gerada por código e o painel de azulejos com a placa no hub (na parede, se houver uma logo atrás; senão num totem). |
 | `SebraelabMenu` (Editor) | Menu **Sebraelab** no Unity: configura um livro inteiro com um clique, coloca o modelo do Sebraelab na cena com colliders e chão de teleporte, e cria o jogador de teste. |
 

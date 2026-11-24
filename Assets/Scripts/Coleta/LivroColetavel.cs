@@ -36,9 +36,12 @@ public class LivroColetavel : MonoBehaviour
     [Tooltip("Som baixinho em loop perto do livro (opcional). Sem clipe, um som é gerado na hora.")]
     [SerializeField] private AudioSource somProximidade;
 
+    [Tooltip("Brilhinhos em volta do livro enquanto ele está escondido (opcional).")]
+    [SerializeField] private ParticleSystem particulas;
+
     [Header("No hub")]
-    [Tooltip("Graus por segundo depois de encontrado, em exposição no hub.")]
-    [SerializeField] private float velocidadeGiroNoHub = 12f;
+    [Tooltip("Graus por segundo depois de encontrado, em exposição no hub (0 = fica de frente para o jogador, no suporte).")]
+    [SerializeField] private float velocidadeGiroNoHub = 0f;
 
     [Header("Eventos")]
     [SerializeField] private UnityEvent aoSerEncontrado = new UnityEvent();
@@ -118,6 +121,7 @@ public class LivroColetavel : MonoBehaviour
 
         if (somProximidade != null) somProximidade.Stop();
         if (brilho != null) brilho.enabled = false;
+        if (particulas != null) particulas.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         aoSerEncontrado.Invoke();
 
         if (GerenciadorColeta.Instancia != null) GerenciadorColeta.Instancia.Registrar(this);

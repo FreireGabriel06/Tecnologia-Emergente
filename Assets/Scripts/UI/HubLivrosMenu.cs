@@ -64,6 +64,8 @@ public class HubLivrosMenu : MonoBehaviour
 
     private readonly List<Button> botoes = new List<Button>();
     private int escolhido = -1;
+    private bool mostrandoDicas;
+    private float proximaChecagem;
     private Button botaoNaMira;
     private RenderTexture texturaVideo;
 
@@ -99,6 +101,14 @@ public class HubLivrosMenu : MonoBehaviour
 
     private void Start() => Atualizar();
 
+    private void Update()
+    {
+        // As dicas aparecem sozinhas depois de um tempo sem achar livro (ver GerenciadorColeta).
+        if (gerenciador == null || Time.time < proximaChecagem) return;
+        proximaChecagem = Time.time + 1f;
+        if (gerenciador.DicasLiberadas != mostrandoDicas) Atualizar();
+    }
+
     private void OnDisable()
     {
         if (videoPlayer != null) videoPlayer.Stop();
@@ -123,10 +133,19 @@ public class HubLivrosMenu : MonoBehaviour
     {
         int total = gerenciador != null ? gerenciador.Total : entradas.Length;
         int achados = gerenciador != null ? gerenciador.Encontrados : 0;
+        mostrandoDicas = gerenciador != null && gerenciador.DicasLiberadas;
         if (textoContador != null)
-            textoContador.text = achados >= total && total > 0
-                ? $"Você encontrou os {total} livros!"
-                : $"Livros encontrados: {achados} de {total}";
+        {
+            if (achados >= total && total > 0)
+            {
+                int segundos = Mathf.RoundToInt(gerenciador != null ? gerenciador.TempoDePartida : 0f);
+                textoContador.text = $"Você encontrou os {total} livros em {segundos / 60}:{segundos % 60:00}!";
+            }
+            else
+            {
+                textoContador.text = $"Livros encontrados: {achados} de {total}";
+            }
+        }
 
         for (int i = 0; i < entradas.Length; i++)
         {
@@ -138,7 +157,11 @@ public class HubLivrosMenu : MonoBehaviour
             bool encontrado = livro != null && livro.Coletado;
             entrada.botao.interactable = encontrado;
             if (entrada.titulo != null) entrada.titulo.text = encontrado ? livro.Titulo : "???";
-            if (entrada.estado != null) entrada.estado.text = encontrado ? livro.Autor : "Ainda não encontrado";
+            if (entrada.estado != null)
+            {
+                string dica = !encontrado && mostrandoDicas && livro != null ? gerenciador.DicaDe(livro) : string.Empty;
+                entrada.estado.text = encontrado ? livro.Autor : string.IsNullOrEmpty(dica) ? "Ainda não encontrado" : "Dica: " + dica;
+            }
             if (entrada.lombada != null) entrada.lombada.color = encontrado ? livro.Cor : corBloqueado;
         }
 

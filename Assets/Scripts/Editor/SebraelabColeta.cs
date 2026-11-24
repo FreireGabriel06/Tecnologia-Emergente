@@ -24,25 +24,25 @@ using UnityEngine.XR.Interaction.Toolkit.UI;
 internal static class SebraelabColeta
 {
     internal const string NomeHub = "Hub dos livros";
-    private const string NomeEsconderijos = "Esconderijos dos livros";
-    private const string NomeLivros = "Livros escondidos";
+    internal const string NomeEsconderijos = "Esconderijos dos livros";
+    internal const string NomeLivros = "Livros escondidos";
     private const string PastaMateriais = "Assets/Materials";
     private const int QuantidadeDeLivros = 3;
 
     /// <summary>
-    /// Móveis do modelo do Sebraelab que viram esconderijos: nome no modelo e nome do esconderijo na cena.
-    /// O que não existir no modelo é ignorado.
+    /// Móveis do modelo do Sebraelab que viram esconderijos: nome no modelo, nome do esconderijo na cena e a dica que
+    /// o menu do hub mostra quando o jogador demora a achar o livro. O que não existir no modelo é ignorado.
     /// </summary>
-    private static readonly (string modelo, string esconderijo)[] MoveisParaEsconder =
+    private static readonly (string modelo, string esconderijo, string dica)[] MoveisParaEsconder =
     {
-        ("Arquibancada", "arquibancada"),
-        ("Mesa Recepção", "mesa da recepção"),
-        ("Bancada Cozinha", "bancada da cozinha"),
-        ("Cube003", "mesa perto da TV"),
-        ("Area de Trabalho 2", "estação de trabalho 2"),
-        ("Area de Trabalho 1", "estação de trabalho 1"),
-        ("Cube025", "banco da parede leste"),
-        ("Cube026", "banco perto da cozinha"),
+        ("Arquibancada", "arquibancada", "nos degraus da arquibancada"),
+        ("Mesa Recepção", "mesa da recepção", "na mesa da recepção, perto da entrada"),
+        ("Bancada Cozinha", "bancada da cozinha", "em cima da bancada da cozinha"),
+        ("Cube003", "mesa perto da TV", "na mesa perto da TV"),
+        ("Area de Trabalho 2", "estação de trabalho 2", "numa estação de trabalho perto da cozinha"),
+        ("Area de Trabalho 1", "estação de trabalho 1", "numa estação de trabalho no meio da sala"),
+        ("Cube025", "banco da parede leste", "num banco encostado na parede do outro lado da sala"),
+        ("Cube026", "banco perto da cozinha", "num banco baixo perto da cozinha"),
     };
 
     // =====================================================================
@@ -126,7 +126,7 @@ internal static class SebraelabColeta
             grupo = new GameObject(NomeEsconderijos);
             Undo.RegisterCreatedObjectUndo(grupo, "Criar esconderijos");
         }
-        var ponto = NovoEsconderijo(grupo.transform, $"Esconderijo {grupo.transform.childCount + 1}", acerto.point, -olhos.forward);
+        var ponto = NovoEsconderijo(grupo.transform, $"Esconderijo {grupo.transform.childCount + 1}", acerto.point, -olhos.forward, "perto daqui");
         Selection.activeGameObject = ponto.gameObject;
     }
 
@@ -176,28 +176,32 @@ internal static class SebraelabColeta
         float largura = Mathf.Min(mesa.size.x, mesa.size.z);
         float espaco = Mathf.Clamp((largura - 0.2f) / 2f, 0.18f, 0.32f);
         var lugares = new List<Transform>();
-        var materialMarca = MaterialSalvo("Hub_Marca", new Color(0.1f, 0.11f, 0.13f), 0f);
+        var madeira = MaterialSalvo("Hub_Suporte", new Color(0.2f, 0.12f, 0.07f), 0f);
         for (int i = 0; i < QuantidadeDeLivros; i++)
         {
             var lugar = new GameObject($"Lugar do livro {i + 1}").transform;
             lugar.SetParent(hub.transform, false);
             lugar.localPosition = new Vector3((i - 1) * espaco, 0.14f, 0f);
 
-            // Marca escura na mesa: mostra que falta um livro ali (some quando o livro chega).
-            var marca = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            marca.name = "Marca";
-            Object.DestroyImmediate(marca.GetComponent<Collider>());
-            marca.transform.SetParent(lugar, false);
-            marca.transform.localPosition = new Vector3(0f, -0.137f, 0f);
-            marca.transform.localScale = new Vector3(0.18f, 0.004f, 0.06f);
-            marca.GetComponent<Renderer>().sharedMaterial = materialMarca;
+            // Suporte de madeira onde o livro fica em pé, e um "?" que some quando o livro chega.
+            Parte(lugar, "Suporte (base)", new Vector3(0f, -0.134f, 0.005f), new Vector3(0.19f, 0.012f, 0.11f), madeira);
+            var encosto = Parte(lugar, "Suporte (encosto)", new Vector3(0f, -0.05f, -0.03f), new Vector3(0.17f, 0.16f, 0.008f), madeira);
+            encosto.transform.localRotation = Quaternion.Euler(-12f, 0f, 0f);
+            CriarInterrogacao(lugar);
             lugares.Add(lugar);
         }
 
-        CriarLuzEZona(hub.transform, mesa.size.y);
+        var luzesDoFinal = CriarLuzes(hub.transform, mesa.size.y);
+        var chegada = SebraelabVisual.Particulas("Brilho de chegada", hub.transform, Vector3.up * 0.15f, 0f, 45, 0.08f,
+                                                 new Vector2(0.5f, 1.1f), new Vector2(0.015f, 0.04f), new Vector2(0.3f, 0.9f), -0.05f,
+                                                 new Color(1f, 0.85f, 0.45f), new Color(0.35f, 0.85f, 1f));
+        var comemoracao = SebraelabVisual.Particulas("Comemoração", hub.transform, Vector3.up * 0.4f, 0f, 160, 0.25f,
+                                                     new Vector2(1.6f, 3f), new Vector2(0.02f, 0.05f), new Vector2(1.2f, 2.8f), 0.35f,
+                                                     new Color(1f, 0.8f, 0.3f), new Color(0.3f, 0.75f, 1f));
 
         // ---- Painel de azulejos de São Luís + menu do hub em cima dele ----
         var painel = SebraelabCulturaSaoLuis.CriarPainel(hub.transform.position + Vector3.up * 0.02f, direcaoJogador, alturaPiso, mesa.max.y);
+        if (painel != null) painel.transform.SetParent(hub.transform, true); // o painel faz parte do hub
         var menu = CriarMenu(painel, hub.transform, gerenciador);
 
         // ---- Esconderijos e livros ----
@@ -209,6 +213,9 @@ internal static class SebraelabColeta
         Preencher(serializado.FindProperty("lugaresNoHub"), lugares.Cast<Object>().ToList());
         Preencher(serializado.FindProperty("esconderijos"), esconderijos.Cast<Object>().ToList());
         serializado.FindProperty("menu").objectReferenceValue = menu;
+        serializado.FindProperty("efeitoChegada").objectReferenceValue = chegada;
+        serializado.FindProperty("efeitoComemoracao").objectReferenceValue = comemoracao;
+        Preencher(serializado.FindProperty("ligarNoFinal"), luzesDoFinal.Cast<Object>().ToList());
         serializado.ApplyModifiedPropertiesWithoutUndo();
 
         Debug.Log($"[Sebraelab] Coleta de livros montada: hub em cima de '{mesa.center}', {esconderijos.Count} esconderijos e {livros.Count} livros escondidos.");
@@ -229,20 +236,29 @@ internal static class SebraelabColeta
         return mesa.GetComponent<Renderer>();
     }
 
-    private static void CriarLuzEZona(Transform hub, float alturaTampo)
+    /// <summary>
+    /// Luzes do hub: a luz de cima (acende quando o jogador chega, com sombra suave), uma luz fixa no painel de
+    /// azulejos e uma luz azul que só liga quando os 3 livros são encontrados. Retorna o que liga no final.
+    /// </summary>
+    private static List<GameObject> CriarLuzes(Transform hub, float alturaTampo)
     {
-        var luz = new GameObject("Luz do hub", typeof(Light));
-        luz.transform.SetParent(hub, false);
-        luz.transform.localPosition = Vector3.up * 1.7f + Vector3.forward * 0.3f;
-        luz.transform.rotation = Quaternion.LookRotation(Vector3.down, hub.forward);
-        var spot = luz.GetComponent<Light>();
-        spot.type = LightType.Spot;
-        spot.range = 4f;
-        spot.spotAngle = 70f;
-        spot.intensity = 3f;
-        spot.color = new Color(1f, 0.93f, 0.8f);
+        var luz = Luz(hub, "Luz do hub", LightType.Spot, new Vector3(0f, 1.7f, 0.3f), Quaternion.LookRotation(Vector3.down, hub.forward),
+                      4f, 3.2f, new Color(1f, 0.93f, 0.8f));
+        luz.spotAngle = 70f;
+        luz.shadows = LightShadows.Soft;
 
-        // A luz acende quando o jogador chega perto do hub.
+        // Luz do painel: vem da frente e de cima, para os azulejos e o menu ficarem bem iluminados.
+        var painel = Luz(hub, "Luz do painel", LightType.Spot, new Vector3(0f, 2.1f, 1.4f),
+                         Quaternion.LookRotation((hub.position + Vector3.up * 0.7f - hub.forward * 0.55f) -
+                                                 hub.TransformPoint(new Vector3(0f, 2.1f, 1.4f)), Vector3.up),
+                         5f, 2.2f, new Color(1f, 0.95f, 0.88f));
+        painel.spotAngle = 80f;
+
+        var final = Luz(hub, "Luz da comemoração", LightType.Point, new Vector3(0f, 0.9f, -0.3f), Quaternion.identity,
+                        3.5f, 2.5f, new Color(0.35f, 0.78f, 1f));
+        final.gameObject.SetActive(false);
+
+        // A luz de cima acende quando o jogador chega perto do hub.
         var zona = new GameObject("Zona do hub", typeof(BoxCollider));
         zona.transform.SetParent(hub, false);
         zona.transform.localPosition = Vector3.forward * 1.3f + Vector3.up * (1.1f - alturaTampo);
@@ -251,8 +267,44 @@ internal static class SebraelabColeta
         caixa.size = new Vector3(3f, 2.2f, 2.4f);
         var destaque = zona.AddComponent<EstandeZonaDestaque>();
         var serializado = new SerializedObject(destaque);
-        Preencher(serializado.FindProperty("objetosDestaque"), new List<Object> { luz });
+        Preencher(serializado.FindProperty("objetosDestaque"), new List<Object> { luz.gameObject });
         serializado.ApplyModifiedPropertiesWithoutUndo();
+
+        return new List<GameObject> { final.gameObject };
+    }
+
+    private static Light Luz(Transform pai, string nome, LightType tipo, Vector3 posicaoLocal, Quaternion rotacao, float alcance,
+                             float intensidade, Color cor)
+    {
+        var objeto = new GameObject(nome, typeof(Light));
+        objeto.transform.SetParent(pai, false);
+        objeto.transform.localPosition = posicaoLocal;
+        objeto.transform.rotation = rotacao;
+        var luz = objeto.GetComponent<Light>();
+        luz.type = tipo;
+        luz.range = alcance;
+        luz.intensity = intensidade;
+        luz.color = cor;
+        luz.shadows = LightShadows.None;
+        return luz;
+    }
+
+    /// <summary>"?" azul flutuando sobre o suporte vazio (some quando o livro chega).</summary>
+    private static void CriarInterrogacao(Transform lugar)
+    {
+        var objeto = new GameObject("Vazio", typeof(RectTransform));
+        objeto.layer = LayerMask.NameToLayer("UI") >= 0 ? LayerMask.NameToLayer("UI") : 0;
+        objeto.transform.SetParent(lugar, false);
+        var rt = (RectTransform)objeto.transform;
+        rt.sizeDelta = new Vector2(160f, 200f);
+        rt.localScale = Vector3.one * 0.001f;
+        rt.localPosition = new Vector3(0f, 0.02f, 0f);
+        rt.localRotation = Quaternion.Euler(0f, 180f, 0f); // a frente do Canvas (-Z) fica virada para o jogador
+        objeto.AddComponent<Canvas>().renderMode = RenderMode.WorldSpace;
+        objeto.AddComponent<CanvasScaler>().dynamicPixelsPerUnit = 10f;
+        var texto = Texto(rt, "Texto", "?", 150f, FontStyles.Bold, new Color(0.3f, 0.79f, 0.94f, 0.85f), 0f, 0f, 160f, 200f,
+                          TextAlignmentOptions.Center);
+        texto.raycastTarget = false;
     }
 
     // =====================================================================
@@ -267,13 +319,13 @@ internal static class SebraelabColeta
 
         if (cenario != null)
         {
-            foreach (var (nome, rotulo) in MoveisParaEsconder)
+            foreach (var (nome, rotulo, dica) in MoveisParaEsconder)
             {
                 var movel = EncontrarPorNome(cenario.transform, nome);
                 if (movel == null || !movel.gameObject.activeInHierarchy) continue;
                 if (!AcharSuperficie(movel.gameObject, alturaPiso, out var ponto)) continue;
                 if (Vector3.Distance(Plano(ponto), Plano(centroHub)) < 2.5f) continue; // perto demais do hub
-                pontos.Add(NovoEsconderijo(grupo.transform, $"Esconderijo - {rotulo}", ponto, centroHub - ponto));
+                pontos.Add(NovoEsconderijo(grupo.transform, $"Esconderijo - {rotulo}", ponto, centroHub - ponto, dica));
             }
         }
 
@@ -286,7 +338,8 @@ internal static class SebraelabColeta
             var chao = new Vector3(centroHub.x, alturaPiso, centroHub.z) + direcao * raio;
             if (!LugarLivre(chao)) continue;
             var pedestal = CriarPedestal(grupo.transform, chao, pontos.Count + 1);
-            pontos.Add(NovoEsconderijo(grupo.transform, $"Esconderijo - pedestal {pontos.Count + 1}", pedestal, centroHub - chao));
+            pontos.Add(NovoEsconderijo(grupo.transform, $"Esconderijo - pedestal {pontos.Count + 1}", pedestal, centroHub - chao,
+                                       "num pedestal branco pela sala"));
         }
 
         if (pontos.Count < QuantidadeDeLivros)
@@ -294,14 +347,21 @@ internal static class SebraelabColeta
         return pontos;
     }
 
-    private static PontoDeLivro NovoEsconderijo(Transform grupo, string nome, Vector3 posicao, Vector3 olharPara)
+    private static PontoDeLivro NovoEsconderijo(Transform grupo, string nome, Vector3 posicao, Vector3 olharPara, string dica = "")
     {
         olharPara.y = 0f;
         var objeto = new GameObject(nome);
         objeto.transform.SetParent(grupo, false);
         objeto.transform.SetPositionAndRotation(posicao, olharPara.sqrMagnitude > 0.001f ? Quaternion.LookRotation(olharPara, Vector3.up) : Quaternion.identity);
         Undo.RegisterCreatedObjectUndo(objeto, "Criar esconderijo");
-        return objeto.AddComponent<PontoDeLivro>();
+        var ponto = objeto.AddComponent<PontoDeLivro>();
+        if (!string.IsNullOrEmpty(dica))
+        {
+            var serializado = new SerializedObject(ponto);
+            serializado.FindProperty("dica").stringValue = dica;
+            serializado.ApplyModifiedPropertiesWithoutUndo();
+        }
+        return ponto;
     }
 
     /// <summary>
@@ -406,7 +466,15 @@ internal static class SebraelabColeta
             else livro.transform.position = Vector3.up * (1f + i * 0.3f);
 
             CriarModeloDoLivro(livro.transform, i, cor);
-            livros.Add(TransformarEmLivroEscondido(livro, dados, cor, CriarBrilho(livro.transform, cor), CriarSom(livro.transform)));
+            CriarTituloNaCapa(livro.transform, dados);
+            var coletavel = TransformarEmLivroEscondido(livro, dados, cor, CriarBrilho(livro.transform, cor), CriarSom(livro.transform));
+            var brilhinhos = SebraelabVisual.Particulas("Brilhinhos", livro.transform, Vector3.zero, 7f, 0, 0.17f,
+                                                        new Vector2(1.2f, 2f), new Vector2(0.012f, 0.03f), new Vector2(0.02f, 0.08f), -0.03f,
+                                                        new Color(1f, 0.86f, 0.5f), Color.Lerp(cor, Color.white, 0.5f));
+            var serializado = new SerializedObject(coletavel);
+            serializado.FindProperty("particulas").objectReferenceValue = brilhinhos;
+            serializado.ApplyModifiedPropertiesWithoutUndo();
+            livros.Add(coletavel);
         }
         return livros;
     }
@@ -414,7 +482,7 @@ internal static class SebraelabColeta
     /// <summary>Livro em pé (16 x 23 cm): capa, contracapa e lombada coloridas e as folhas aparecendo nas bordas.</summary>
     private static void CriarModeloDoLivro(Transform livro, int indice, Color cor)
     {
-        var capa = MaterialSalvo($"Livro_Coleta_{indice + 1}", cor, 0.35f);
+        var capa = MaterialSalvo($"Livro_Coleta_{indice + 1}", cor, 2.2f); // emissão forte: o bloom faz o livro brilhar
         var folhas = MaterialSalvo("Livro_Folhas", new Color(0.95f, 0.92f, 0.84f), 0f);
         Parte(livro, "Capa", new Vector3(0f, 0f, 0.0135f), new Vector3(0.16f, 0.23f, 0.003f), capa);
         Parte(livro, "Contracapa", new Vector3(0f, 0f, -0.0135f), new Vector3(0.16f, 0.23f, 0.003f), capa);
@@ -426,7 +494,27 @@ internal static class SebraelabColeta
         caixa.size = new Vector3(0.16f, 0.23f, 0.03f);
     }
 
-    private static void Parte(Transform pai, string nome, Vector3 posicao, Vector3 escala, Material material)
+    /// <summary>Título e autor escritos na capa (Canvas pequeno colado na frente do livro).</summary>
+    private static void CriarTituloNaCapa(Transform livro, LivroData dados)
+    {
+        if (dados == null) return;
+        var objeto = new GameObject("Capa (texto)", typeof(RectTransform));
+        objeto.transform.SetParent(livro, false);
+        var rt = (RectTransform)objeto.transform;
+        rt.sizeDelta = new Vector2(140f, 200f);
+        rt.localScale = Vector3.one * 0.001f;
+        rt.localPosition = new Vector3(0f, 0f, 0.0156f);
+        rt.localRotation = Quaternion.Euler(0f, 180f, 0f); // fica virado para fora da capa
+        objeto.AddComponent<Canvas>().renderMode = RenderMode.WorldSpace;
+        objeto.AddComponent<CanvasScaler>().dynamicPixelsPerUnit = 20f;
+        var titulo = Texto(rt, "Titulo", dados.Titulo, 20f, FontStyles.Bold, new Color(1f, 0.97f, 0.9f), 10f, 30f, 120f, 90f,
+                           TextAlignmentOptions.Center);
+        AjustarTamanho(titulo, 12f);
+        Texto(rt, "Autor", dados.Autor, 11f, FontStyles.Italic, new Color(1f, 0.93f, 0.8f, 0.9f), 10f, 140f, 120f, 40f,
+              TextAlignmentOptions.Center);
+    }
+
+    private static GameObject Parte(Transform pai, string nome, Vector3 posicao, Vector3 escala, Material material)
     {
         var parte = GameObject.CreatePrimitive(PrimitiveType.Cube);
         parte.name = nome;
@@ -435,6 +523,7 @@ internal static class SebraelabColeta
         parte.transform.localPosition = posicao;
         parte.transform.localScale = escala;
         parte.GetComponent<Renderer>().sharedMaterial = material;
+        return parte;
     }
 
     private static Light CriarBrilho(Transform livro, Color cor)
@@ -730,19 +819,25 @@ internal static class SebraelabColeta
     {
         if (!AssetDatabase.IsValidFolder(PastaMateriais)) AssetDatabase.CreateFolder("Assets", "Materials");
         string caminho = $"{PastaMateriais}/{nome}.mat";
-        var existente = AssetDatabase.LoadAssetAtPath<Material>(caminho);
-        if (existente != null) return existente;
+        var material = AssetDatabase.LoadAssetAtPath<Material>(caminho);
+        bool novo = material == null;
+        if (novo)
+        {
+            var padrao = GraphicsSettings.defaultRenderPipeline != null ? GraphicsSettings.defaultRenderPipeline.defaultMaterial : null;
+            material = padrao != null ? new Material(padrao) : new Material(Shader.Find("Standard"));
+        }
 
-        var padrao = GraphicsSettings.defaultRenderPipeline != null ? GraphicsSettings.defaultRenderPipeline.defaultMaterial : null;
-        var material = padrao != null ? new Material(padrao) : new Material(Shader.Find("Standard"));
         material.color = cor;
+        if (material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", brilho > 0f ? 0.55f : 0.35f);
         if (brilho > 0f)
         {
             material.EnableKeyword("_EMISSION");
             material.SetColor("_EmissionColor", cor * brilho);
             material.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
         }
-        AssetDatabase.CreateAsset(material, caminho);
+
+        if (novo) AssetDatabase.CreateAsset(material, caminho);
+        else EditorUtility.SetDirty(material);
         return material;
     }
 }
